@@ -12,7 +12,7 @@ export default tseslint.config(
   eslintPluginPrettierRecommended,
   { ignores: ['node_modules', 'dist'] },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.node }, parserOptions: { project: true } },
     plugins: {
       'beautiful-sort': beautifulSort,
