@@ -1,5 +1,6 @@
 {
   "name": "@gaps-filler/root",
+  "description": "an app that helps to fill gaps in knowledge",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
