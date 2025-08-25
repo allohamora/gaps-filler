@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 # temp
 **/.temp/**/*
 !**/.temp/.gitkeep
+
+# turbo
+.turbo
