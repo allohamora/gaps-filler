@@ -21,7 +21,6 @@
   "devDependencies": {
     "@gaps-filler/eslint-config": "*",
     "@gaps-filler/prettier-config": "*",
-    "@gaps-filler/tsconfig": "*",
     "dotenv": "^16.5.0",
     "eslint": "^9.26.0",
     "prettier": "^3.5.3",
