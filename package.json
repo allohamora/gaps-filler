@@ -3,9 +3,6 @@
   "description": "an app that helps to fill gaps in knowledge",
   "type": "module",
   "private": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "devDependencies": {
     "turbo": "^2.5.6"
   },
