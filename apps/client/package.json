@@ -8,7 +8,9 @@
     "format": "prettier . --check",
     "format:fix": "prettier --write .",
     "lint": "eslint \"**/*.{ts,tsx}\"",
-    "lint:fix": "eslint \"**/*.{ts,tsx}\" --fix"
+    "lint:fix": "eslint \"**/*.{ts,tsx}\" --fix",
+    "csslint": "stylelint \"src/**/*.css\"",
+    "csslint:fix": "stylelint \"src/**/*.css\" --fix"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -38,6 +40,11 @@
     "eslint-plugin-tailwindcss": "^3.18.2",
     "globals": "^16.1.0",
     "prettier": "^3.5.3",
+    "stylelint": "^16.23.1",
+    "stylelint-config-clean-order": "^7.0.0",
+    "stylelint-config-standard": "^39.0.0",
+    "stylelint-config-tailwindcss": "^1.0.0",
+    "stylelint-prettier": "^5.0.3",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
@@ -46,6 +53,7 @@
   "prettier": "@gaps-filler/prettier-config",
   "lint-staged": {
     "*.{js,cjs,mjs,json,yml,md}": "prettier --write",
+    "*.css": "stylelint --fix",
     "*.{ts,tsx}": "eslint --fix"
   }
 }
