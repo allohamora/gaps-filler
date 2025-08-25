@@ -11,12 +11,15 @@
     "lint:fix": "eslint \"**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
+    "@tanstack/react-router": "^1.131.27",
+    "@tanstack/react-router-devtools": "^1.131.27",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@gaps-filler/eslint-config": "*",
     "@gaps-filler/prettier-config": "*",
+    "@tanstack/router-plugin": "^1.131.27",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
@@ -26,8 +29,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "eslint-plugin-tailwindcss": "^3.18.2",
-    "prettier": "^3.5.3",
     "globals": "^16.1.0",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
     "vite": "^7.1.2"
@@ -35,6 +38,6 @@
   "prettier": "@gaps-filler/prettier-config",
   "lint-staged": {
     "*.{js,cjs,mjs,json,yml,md}": "prettier --write",
-    "*.ts": "eslint --fix"
+    "*.{ts,tsx}": "eslint --fix"
   }
 }
