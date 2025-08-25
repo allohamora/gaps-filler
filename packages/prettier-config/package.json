@@ -1,0 +1,17 @@
+{
+  "name": "@gaps-filler/prettier-config",
+  "type": "commonjs",
+  "main": "./src/index.json",
+  "private": true,
+  "scripts": {
+    "format": "prettier . --check",
+    "format:fix": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  },
+  "prettier": "@gaps-filler/prettier-config",
+  "lint-staged": {
+    "*.json": "prettier --write"
+  }
+}
