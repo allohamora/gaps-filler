@@ -3,7 +3,19 @@
   "description": "an app that helps to fill gaps in knowledge",
   "type": "module",
   "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "release": "standard-version --tag-prefix=",
+    "release:minor": "standard-version --release-as minor --tag-prefix=",
+    "release:patch": "standard-version --release-as patch --tag-prefix=",
+    "release:major": "standard-version --release-as major --tag-prefix="
+  },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "standard-version": "^9.5.0",
     "turbo": "^2.5.6"
   },
   "workspaces": [
