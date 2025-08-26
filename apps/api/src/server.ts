@@ -6,6 +6,7 @@ import { serve } from '@hono/node-server';
 import { NODE_ENV, PORT } from './config.js';
 import { createLogger } from './libs/pino.lib.js';
 import { createNodeWebSocket } from '@hono/node-ws';
+import { createWsEvents } from './services/ws.service.js';
 
 const logger = createLogger('server');
 
@@ -13,28 +14,7 @@ const hono = new Hono();
 
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app: hono });
 
-export const app = hono
-  .use(cors())
-  .get(
-    '/v1/ws',
-    upgradeWebSocket(() => {
-      return {
-        onMessage: (event) => {
-          console.log(event.data);
-        },
-        onClose: () => {
-          console.log('closed');
-        },
-        onError: (event) => {
-          console.error(event);
-        },
-        onOpen: () => {
-          console.log('open');
-        },
-      };
-    }),
-  )
-  .route('/v1', v1Router);
+export const app = hono.use(cors()).get('/v1/ws', upgradeWebSocket(createWsEvents)).route('/v1', v1Router);
 
 export const listen = async (port = PORT) => {
   const { promise, resolve } = Promise.withResolvers<AddressInfo>();

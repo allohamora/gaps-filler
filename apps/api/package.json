@@ -1,7 +1,7 @@
 {
   "name": "@gaps-filler/api",
   "type": "module",
-  "main": "src/server.ts",
+  "main": "src/export.ts",
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
@@ -14,9 +14,13 @@
     "lint:fix": "eslint \"**/*.ts\" --fix"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.9",
+    "@cartesia/cartesia-js": "^2.2.5",
+    "@deepgram/sdk": "^4.11.2",
     "@hono/node-server": "^1.19.0",
     "@hono/node-ws": "^1.2.0",
     "@hono/zod-openapi": "^0.19.9",
+    "ai": "^5.0.24",
     "close-with-grace": "^2.2.0",
     "hono": "^4.9.4",
     "pino": "^9.9.0",

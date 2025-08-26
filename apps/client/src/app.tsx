@@ -1,42 +1,67 @@
-import { useEffect, useState, type FC } from 'react';
+import { useState, type FC } from 'react';
 import { Button } from './components/ui/button';
-import { api } from './lib/api';
+import { useWebSocket } from './hooks/use-web-socket';
+import { useMicrophone } from './hooks/use-microphone';
+import { usePlayer } from './hooks/use-player';
+import type { TextMessageChunk } from '@gaps-filler/api';
 
 export const App: FC = () => {
-  const [message, setMessage] = useState<string>();
+  const [messages, setMessages] = useState<TextMessageChunk[]>([]);
+  const [isStarted, setIsStarted] = useState(false);
 
-  useEffect(() => {
-    void (async () => {
-      const res = await api.v1['hello-world'].$get();
-      const data = await res.json();
+  const { startPlaying, stopPlaying, enqueue } = usePlayer();
 
-      setMessage(data.message);
-    })();
-  }, []);
+  const { open, close, send } = useWebSocket({
+    onMessage: (event) => {
+      if (event.type === 'text') {
+        setMessages((prev) => {
+          const message = prev.find((m) => m.id === event.data.id);
+          if (message) {
+            return prev.map((m) =>
+              m.id === event.data.id ? { ...m, content: `${m.content} ${event.data.content}` } : m,
+            );
+          }
 
-  useEffect(() => {
-    const ws = api.v1.ws.$ws();
-    const controller = new AbortController();
+          return [...prev, event.data];
+        });
+      }
 
-    ws.addEventListener(
-      'open',
-      () => {
-        console.log('WebSocket connection opened');
-      },
-      { signal: controller.signal },
-    );
+      if (event.type === 'audio') {
+        enqueue(event.data);
+      }
 
-    return () => {
-      ws.close();
-      controller.abort();
-    };
-  }, []);
+      if (event.type === 'result') {
+        close();
+      }
+    },
+  });
+
+  const { startListening, stopListening } = useMicrophone({
+    onData: (data) => {
+      send({ type: 'audio', data });
+    },
+  });
+
+  const start = async () => {
+    open();
+    await startListening();
+    await startPlaying();
+    setIsStarted(true);
+    setMessages([]);
+  };
+
+  const stop = async () => {
+    await stopPlaying();
+    await stopListening();
+    send({ type: 'finish' });
+    setIsStarted(false);
+  };
 
   return (
     <div className="flex items-center justify-center pt-10">
-      <div>
-        <Button>test</Button>
-        {message && <div>{message}</div>}
+      <div className="block">
+        <div>{isStarted ? <Button onClick={stop}>stop</Button> : <Button onClick={start}>start</Button>}</div>
+        <code>{JSON.stringify(messages, null, 2)}</code>
       </div>
     </div>
   );
