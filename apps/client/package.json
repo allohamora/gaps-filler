@@ -13,11 +13,13 @@
     "csslint:fix": "stylelint \"src/**/*.css\" --fix"
   },
   "dependencies": {
+    "@gaps-filler/eslint-config": "*",
     "@radix-ui/react-slot": "^1.2.3",
     "@tanstack/react-router": "^1.131.27",
     "@tanstack/react-router-devtools": "^1.131.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "hono": "^4.9.4",
     "lucide-react": "^0.541.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

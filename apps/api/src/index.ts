@@ -1,11 +1,22 @@
-import { PORT } from './config.js';
-import { Hono } from 'hono';
-import { serve } from '@hono/node-server';
+import closeWithGrace from 'close-with-grace';
+import { promisify } from 'node:util';
+import { listen } from './server.js';
+import { createLogger } from './libs/pino.lib.js';
 
-const app = new Hono();
+const GRACEFUL_SHUTDOWN_DELAY = 15_000;
 
-app.get('/', (c) => c.text('Hello, world!'));
+const main = async () => {
+  const logger = createLogger('main');
 
-serve({ fetch: app.fetch, port: PORT }, (info) => {
-  console.log(`Server running on http://localhost:${info.port}`);
-});
+  const server = await listen();
+
+  closeWithGrace({ delay: GRACEFUL_SHUTDOWN_DELAY, logger }, async (props) => {
+    logger.info({ msg: 'Graceful shutdown has been started', ...props });
+
+    await promisify<void>((cb) => server.close(cb))();
+
+    logger.info({ msg: 'Graceful shutdown has been finished', ...props });
+  });
+};
+
+void main();

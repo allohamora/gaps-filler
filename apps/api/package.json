@@ -1,6 +1,7 @@
 {
-  "name": "@gaps-filler/email",
+  "name": "@gaps-filler/api",
   "type": "module",
+  "main": "src/server.ts",
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
@@ -14,7 +15,12 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
+    "@hono/node-ws": "^1.2.0",
+    "@hono/zod-openapi": "^0.19.9",
+    "close-with-grace": "^2.2.0",
     "hono": "^4.9.4",
+    "pino": "^9.9.0",
+    "pino-pretty": "^13.1.1",
     "znv": "^0.5.0",
     "zod": "^3.24.4"
   },
