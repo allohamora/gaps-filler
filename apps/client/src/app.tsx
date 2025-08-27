@@ -34,6 +34,9 @@ export const App: FC = () => {
         close();
       }
     },
+    onClose: async () => {
+      await stopWithoutClose();
+    },
   });
 
   const { startListening, stopListening } = useMicrophone({
@@ -50,11 +53,15 @@ export const App: FC = () => {
     setMessages([]);
   };
 
-  const stop = async () => {
+  async function stopWithoutClose() {
     await stopPlaying();
     await stopListening();
-    send({ type: 'finish' });
     setIsStarted(false);
+  }
+
+  const stop = async () => {
+    await stopWithoutClose();
+    send({ type: 'finish' });
     await close();
   };
 
