@@ -41,11 +41,11 @@ export class TextToSpeech {
     }
 
     const body: WebSocketTtsRequest = {
-      modelId: 'sonic-english',
+      modelId: 'sonic-turbo',
       voice: {
         mode: 'id',
-        // "Customer Support Man"
-        id: 'a167e0f3-df7e-4d52-a9c3-f949145efdab',
+        // "Pleasant Man"
+        id: '729651dc-c6c3-4ee5-97fa-350da1f88600',
       },
       contextId: randomUUID(),
       transcript: value,
