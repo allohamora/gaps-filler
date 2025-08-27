@@ -7,12 +7,19 @@ const main = async () => {
   const rl = readline.createInterface({ input, output });
 
   while (true) {
-    const input = await rl.question('Input: ');
+    const input = await rl.question('User: ');
 
     const stream = await chat.stream(input);
 
+    let isFirstChunk = true;
+
     for await (const chunk of stream) {
-      console.log(chunk);
+      if (isFirstChunk) {
+        console.log(`Assistant: ${chunk}`);
+        isFirstChunk = false;
+      } else {
+        console.log(chunk);
+      }
     }
   }
 };
