@@ -2,7 +2,7 @@ import { createClient, LiveTranscriptionEvent, LiveTranscriptionEvents } from '@
 import { once } from 'node:events';
 import { createLogger } from '../libs/pino.lib.js';
 import { randomUUID } from 'node:crypto';
-import { SAMPLE_RATE } from '../constants/audio.constants.js';
+import { CHANNELS, SAMPLE_RATE } from '../constants/audio.constants.js';
 import { DEEPGRAM_API_KEY } from 'src/config.js';
 
 export type OnTranscriptionOptions = {
@@ -24,6 +24,8 @@ export class SpeechToText {
     model: 'nova-3',
 
     interim_results: true,
+    utterance_end_ms: 1000,
+
     // https://developers.deepgram.com/docs/smart-format
     // with smart formatting we receive the long load number as date time or something and its' not possible to receive the load number
     punctuate: true,
@@ -31,6 +33,7 @@ export class SpeechToText {
     endpointing: 300,
 
     encoding: 'linear16',
+    channels: CHANNELS,
     sample_rate: SAMPLE_RATE,
 
     language: 'en',
@@ -109,6 +112,8 @@ export class SpeechToText {
     const onTranscript = (data: LiveTranscriptionEvent) => {
       const { transcript } = data.channel.alternatives[0] || {};
       const { is_final, speech_final } = data;
+
+      console.log({ transcript, is_final, speech_final });
 
       if (transcript) {
         onText(transcript);
