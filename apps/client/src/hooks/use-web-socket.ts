@@ -13,10 +13,20 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
   const webSocketRef = useRef<WebSocket>(null);
   const controllerRef = useRef<AbortController>(null);
 
-  const close = () => {
+  const close = async () => {
     if (!webSocketRef.current) {
       return;
     }
+
+    const { promise, resolve } = Promise.withResolvers<void>();
+
+    webSocketRef.current.addEventListener(
+      'close',
+      () => {
+        resolve();
+      },
+      { signal: controllerRef.current?.signal, once: true },
+    );
 
     webSocketRef.current.close();
 
@@ -26,15 +36,19 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
     }
 
     webSocketRef.current = null;
+
+    await promise;
   };
 
-  const open = () => {
+  const open = async () => {
     if (webSocketRef.current) {
-      close();
+      await close();
     }
 
     controllerRef.current = new AbortController();
     webSocketRef.current = api.v1.ws.$ws();
+
+    const { promise, resolve } = Promise.withResolvers<void>();
 
     webSocketRef.current.addEventListener(
       'open',
@@ -67,6 +81,16 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
       },
       { signal: controllerRef.current.signal },
     );
+
+    webSocketRef.current?.addEventListener(
+      'open',
+      () => {
+        resolve();
+      },
+      { signal: controllerRef.current?.signal, once: true },
+    );
+
+    await promise;
   };
 
   const send = (message: Message) => {

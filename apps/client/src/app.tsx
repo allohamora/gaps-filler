@@ -43,7 +43,7 @@ export const App: FC = () => {
   });
 
   const start = async () => {
-    open();
+    await open();
     await startListening();
     await startPlaying();
     setIsStarted(true);
@@ -55,6 +55,7 @@ export const App: FC = () => {
     await stopListening();
     send({ type: 'finish' });
     setIsStarted(false);
+    await close();
   };
 
   return (
