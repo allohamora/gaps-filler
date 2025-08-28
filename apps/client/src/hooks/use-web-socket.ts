@@ -29,6 +29,7 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
     );
 
     webSocketRef.current.close();
+    await promise;
 
     if (controllerRef.current) {
       controllerRef.current.abort();
@@ -36,8 +37,6 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
     }
 
     webSocketRef.current = null;
-
-    await promise;
   };
 
   const open = async () => {
