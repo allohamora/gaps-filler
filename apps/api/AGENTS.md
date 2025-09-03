@@ -44,6 +44,30 @@ src/
 
 Files inside directories follow the pattern `{name}.{dir}.ts`. For example: `libs` directory contains `sheets.lib.ts`, `services` directory contains `streamer.service.ts`, etc.
 
+### Types Directory
+
+The `types/` directory contains **only** TypeScript type definitions and interfaces. It should not contain validation schemas or runtime logic.
+
+**Important**: If you need to create validation for an endpoint, it should be created directly in the route handler using Zod validation, not in the types directory. Here's the correct pattern:
+
+```ts
+const route = app.post(
+  '/posts',
+  zValidator(
+    'form',
+    z.object({
+      body: z.string(),
+    }),
+  ),
+  (c) => {
+    const validated = c.req.valid('form');
+    // ... use your validated data
+  },
+);
+```
+
+**Note**: You don't need to create separate TypeScript types for request parameters and body when using Zod validation. The `zValidator` provides type-safe validation that automatically infers the correct types, so TypeScript will know the exact shape of your validated data without additional type definitions.
+
 ### API Endpoints
 
 All API endpoints should use the `/v1` prefix and are created inside `v1.router.ts`. This ensures proper versioning and organization of the API routes.
@@ -72,6 +96,8 @@ export const v1Router = new Hono().route('/articles', articlesRouter).route('/ch
 ### Type Sharing
 
 The API exports types through the `export.ts` file, which provides shared types and interfaces for the client to import, ensuring consistent type safety across the full-stack application.
+
+**Important**: Only export types and interfaces that are actually needed by the client application. Don't export everything you think might be useful - be selective and only export what is necessary for the client to function properly. This keeps the client bundle clean and prevents unnecessary type pollution.
 
 ### Avoiding Outdated Patterns
 
