@@ -59,6 +59,8 @@ export class TextToSpeech {
       for await (const transcript of stream) {
         this.ws.continue({ ...body, transcript });
       }
+
+      this.ws.send({ ...body, transcript: '', continue: false });
     };
 
     void handleStream();
