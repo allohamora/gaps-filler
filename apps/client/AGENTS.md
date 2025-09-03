@@ -37,3 +37,21 @@ src/
 ### Design System
 
 Our design system is based on the default shadcn/ui components. All new components should be created in the same style to provide a cohesive and cool UI experience for users. This ensures consistency across the application and maintains the modern, polished aesthetic that shadcn/ui provides.
+
+## Scripts
+
+The following npm scripts are available for development and build tasks:
+
+### Development
+
+- **`dev`**: Start the Vite development server with hot reload
+- **`build`**: Build the application for production (TypeScript compilation + Vite build)
+
+### Code Quality
+
+- **`format`**: Check code formatting with Prettier
+- **`format:fix`**: Fix code formatting issues automatically
+- **`lint`**: Run ESLint to check TypeScript/React code quality
+- **`lint:fix`**: Fix ESLint issues automatically
+- **`csslint`**: Check CSS code quality with Stylelint
+- **`csslint:fix`**: Fix CSS code quality issues automatically

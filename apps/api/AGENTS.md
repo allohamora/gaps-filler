@@ -15,13 +15,13 @@ The Gaps Filler API is a Hono-based Node.js application that provides HTTP and W
 - **TypeScript**: Full type safety throughout the application
 - **Zod**: Schema validation and type inference
 - **Vercel AI SDK**: AI model integration
+- **ESM**: ECMAScript Modules for modern JavaScript (imports require .js file extensions)
 
 ### Services
 
 - **Deepgram**: Speech-to-text service
 - **Cartesia**: Text-to-speech service
 - **Gemini**: Large language model
-- **ESM**: ECMAScript Modules for modern JavaScript (imports require .js file extensions)
 
 ### Server Structure
 
@@ -51,3 +51,25 @@ All API endpoints should use the `/v1` prefix and are created inside `v1.router.
 ### Type Sharing
 
 The API exports types through the `export.ts` file, which provides shared types and interfaces for the client to import, ensuring consistent type safety across the full-stack application.
+
+## Scripts
+
+The following npm scripts are available for development and build tasks:
+
+### Development
+
+- **`dev`**: Start the development server with hot reload using tsx
+- **`dev-chat`**: Run the chat prompt testing utility
+- **`start`**: Start the production server from built files
+
+### Build
+
+- **`build`**: Build the application for production (TypeScript compilation)
+- **`postbuild`**: Post-build step to resolve TypeScript path aliases
+
+### Code Quality
+
+- **`format`**: Check code formatting with Prettier
+- **`format:fix`**: Fix code formatting issues automatically
+- **`lint`**: Run ESLint to check TypeScript code quality
+- **`lint:fix`**: Fix ESLint issues automatically
