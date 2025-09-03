@@ -26,7 +26,8 @@ src/
 ├── app.tsx              # Main application component
 ├── main.tsx             # Application entry point
 ├── index.css            # Global styles
-├── components/          # UI components
+├── components/ui        # UI components
+├── components/pages     # Pages
 ├── hooks/               # Custom React hooks
 ├── lib/                 # Facades for third party APIS and http clients
 ├── routes/              # TanStack Router routes
