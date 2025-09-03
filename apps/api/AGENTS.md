@@ -73,6 +73,21 @@ export const v1Router = new Hono().route('/articles', articlesRouter).route('/ch
 
 The API exports types through the `export.ts` file, which provides shared types and interfaces for the client to import, ensuring consistent type safety across the full-stack application.
 
+### Avoiding Outdated Patterns
+
+**Important**: When working with core frameworks like Hono, avoid using outdated patterns that AI tools commonly generate. AI-generated code often references deprecated approaches or outdated library versions.
+
+**Common Pitfalls to Avoid:**
+
+- **Vercel AI SDK**: Don't use outdated AI library patterns from Vercel that may not be compatible with current Hono versions
+- **Middleware Patterns**: Use current Hono middleware patterns instead of Express-style middleware
+- **Route Definitions**: Follow current Hono router patterns rather than older web framework approaches
+- **Type Definitions**: Use current Hono types and avoid deprecated interfaces
+
+**Best Practice**: Always reference the official Hono documentation and current examples rather than relying solely on AI-generated code that may contain outdated patterns.
+
+**Before Writing Code**: Always check the `package.json` file to verify the exact versions of dependencies being used. This ensures that any code patterns or API calls you implement will actually work with the installed package versions, preventing runtime errors from version mismatches.
+
 ## Scripts
 
 The following npm scripts are available for development and build tasks:
