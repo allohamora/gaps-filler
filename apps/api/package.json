@@ -20,6 +20,7 @@
     "@deepgram/sdk": "^4.11.2",
     "@hono/node-server": "^1.19.0",
     "@hono/node-ws": "^1.2.0",
+    "@hono/zod-validator": "^0.7.2",
     "ai": "^5.0.24",
     "close-with-grace": "^2.2.0",
     "hono": "^4.9.4",
