@@ -48,6 +48,27 @@ Files inside directories follow the pattern `{name}.{dir}.ts`. For example: `lib
 
 All API endpoints should use the `/v1` prefix and are created inside `v1.router.ts`. This ensures proper versioning and organization of the API routes.
 
+### Router Pattern
+
+To maintain type safety and consistency, create routers using the following pattern:
+
+```ts
+export const {name}Router = new Hono()
+  .post('/endpoint', handler)
+  .get('/endpoint', handler)
+```
+
+### Router Integration
+
+After creating individual routers, connect them in the main `v1.router.ts` file:
+
+```ts
+import { articlesRouter } from './articles.router';
+import { chatRouter } from './chat.router';
+
+export const v1Router = new Hono().route('/articles', articlesRouter).route('/chat', chatRouter);
+```
+
 ### Type Sharing
 
 The API exports types through the `export.ts` file, which provides shared types and interfaces for the client to import, ensuring consistent type safety across the full-stack application.
