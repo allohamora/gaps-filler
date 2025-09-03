@@ -21,6 +21,7 @@ The Gaps Filler API is a Hono-based Node.js application that provides HTTP and W
 - **Deepgram**: Speech-to-text service
 - **Cartesia**: Text-to-speech service
 - **Gemini**: Large language model
+- **ESM**: ECMAScript Modules for modern JavaScript (imports require .js file extensions)
 
 ### Server Structure
 

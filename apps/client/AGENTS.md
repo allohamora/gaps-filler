@@ -17,6 +17,7 @@ The Gaps Filler Client is a Vite-based React application that provides a web int
 - **shadcn/ui**: Component library
 - **TanStack Router**: Type-safe routing with file-based routing
 - **Zod**: Schema validation and type inference
+- **ESM**: ECMAScript Modules for modern JavaScript (imports require .ts/.tsx file extensions)
 
 ### Client Structure
 
