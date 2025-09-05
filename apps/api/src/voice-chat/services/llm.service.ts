@@ -6,9 +6,9 @@ import { createLogger } from 'src/services/logger.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
 
-export class Chat {
+export class LlmSession {
   private model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
-  private logger = createLogger('chat');
+  private logger = createLogger('llm');
   private messages: ModelMessage[] = [
     {
       role: 'system',

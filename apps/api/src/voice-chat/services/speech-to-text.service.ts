@@ -15,7 +15,7 @@ const KEEP_ALIVE_INTERVAL = 10 * 1000;
 
 const client = createClient(DEEPGRAM_API_KEY);
 
-export class SpeechToText {
+export class SpeechToTextSession {
   private logger = createLogger('speech-to-text');
 
   private live = client.listen.live({
@@ -112,8 +112,6 @@ export class SpeechToText {
     const onTranscript = (data: LiveTranscriptionEvent) => {
       const { transcript } = data.channel.alternatives[0] || {};
       const { is_final, speech_final } = data;
-
-      console.log({ transcript, is_final, speech_final });
 
       if (transcript) {
         onText(transcript);

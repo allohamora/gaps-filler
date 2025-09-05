@@ -14,7 +14,7 @@ const client = new CartesiaClient({
   cartesiaVersion: CARTESIA_VERSION as CartesiaVersion,
 });
 
-export class TextToSpeech {
+export class TextToSpeechSession {
   private logger = createLogger('text-to-speech');
 
   private ws = client.tts.websocket({

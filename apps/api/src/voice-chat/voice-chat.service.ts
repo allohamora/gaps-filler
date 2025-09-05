@@ -1,83 +1,104 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
-import { SpeechToText } from './services/speech-to-text.service.js';
-import { TextToSpeech } from './services/text-to-speech.service.js';
-import { Chat } from './services/chat.service.js';
+import { SpeechToTextSession } from './services/speech-to-text.service.js';
+import { TextToSpeechSession } from './services/text-to-speech.service.js';
+import { LlmSession } from './services/llm.service.js';
 import { Message } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
 import { streamer } from './services/streamer.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 
-export const createWsEvents = async () => {
-  const sessionId = randomUUID();
+class VoiceChatSession {
+  private logger = createLogger('voice-chat-session');
 
-  const logger = createLogger(`ws-connection--${sessionId}`);
+  private stt = new SpeechToTextSession();
+  private tts = new TextToSpeechSession();
+  private llm = new LlmSession();
 
-  logger.info({ msg: 'connection was opened' });
+  private ws?: WSContext<WebSocket>;
 
-  const stt = new SpeechToText();
-  await stt.init();
+  private stream = streamer.setup((message) => this.sendMessage(message));
+  private manager = interruptManager(() => this.stream.interrupt());
 
-  const tts = new TextToSpeech();
-  await tts.init?.();
+  private sendMessage(message: Message) {
+    this.ws?.send(JSON.stringify(message));
+  }
 
-  const chat = new Chat();
+  private async open(ws: WSContext<WebSocket>) {
+    await this.stt.init();
+    await this.tts.init?.();
 
-  let ws: WSContext<WebSocket> | undefined;
+    this.ws = ws;
 
-  const sendMessage = (message: Message) => ws?.send(JSON.stringify(message));
-  const { startSending, stopSending, streamVoice, interrupt } = streamer.setup(sendMessage);
+    void this.stream.startSending();
 
-  return {
-    onOpen: (_, socket) => {
-      ws = socket;
+    this.stt.onTranscription({
+      onResult: async (data) => {
+        await this.manager.withHandler(async (handler) => {
+          const res = await handler.ifContinue(async () => await this.llm.stream(data));
+          const sendMessage = this.sendMessage.bind(this);
 
-      const manager = interruptManager(() => interrupt());
+          async function* streamWithTranscription() {
+            const id = randomUUID();
 
-      void startSending();
+            for await (const content of res) {
+              sendMessage({ type: 'text', data: { id, content, role: 'assistant' } });
 
-      stt.onTranscription({
-        onResult: async (data) => {
-          await manager.withHandler(async (handler) => {
-            const res = await handler.ifContinue(async () => await chat.stream(data));
-
-            async function* streamWithTranscription() {
-              const id = randomUUID();
-
-              for await (const content of res) {
-                sendMessage({ type: 'text', data: { id, content, role: 'assistant' } });
-
-                yield content;
-              }
+              yield content;
             }
+          }
 
-            await handler.ifContinue(async () => await streamVoice(tts.voiceStream(streamWithTranscription())));
-          });
-        },
-        onChunk: (transcript, id) => {
-          sendMessage({ type: 'text', data: { id, content: transcript, role: 'user' } });
-        },
-        onText: () => {
-          manager.interrupt();
-        },
-      });
-    },
-    onClose: async () => {
-      await stt.close();
-      tts.close?.();
-      stopSending();
-      logger.info({ msg: 'connection was closed' });
-    },
-    onMessage: async (message) => {
-      const event: Message = JSON.parse(message.data.toString());
+          await handler.ifContinue(
+            async () => await this.stream.streamVoice(this.tts.voiceStream(streamWithTranscription())),
+          );
+        });
+      },
+      onChunk: (transcript, id) => {
+        this.sendMessage({ type: 'text', data: { id, content: transcript, role: 'user' } });
+      },
+      onText: () => {
+        this.manager.interrupt();
+      },
+    });
 
-      if (event.type === 'audio') {
-        stt.transcript(Buffer.from(event.data, 'base64'));
-      }
+    this.logger.info({ msg: 'opened' });
+  }
 
-      if (event.type === 'finish') {
-        sendMessage({ type: 'result' });
-      }
-    },
-  } as WSEvents<WebSocket>;
+  private async close() {
+    await this.stt.close();
+    this.tts.close?.();
+    this.stream.stopSending();
+
+    this.logger.info({ msg: 'closed' });
+  }
+
+  private handleMessage(event: MessageEvent) {
+    const message: Message = JSON.parse(event.data.toString());
+
+    if (message.type === 'audio') {
+      this.stt.transcript(Buffer.from(message.data, 'base64'));
+    }
+
+    if (message.type === 'finish') {
+      this.sendMessage({ type: 'result' });
+    }
+  }
+
+  public toWsEvents(): WSEvents<WebSocket> {
+    return {
+      onOpen: async (_, socket) => {
+        await this.open(socket);
+      },
+      onClose: async () => {
+        await this.close();
+      },
+      onMessage: (message) => {
+        this.handleMessage(message);
+      },
+    };
+  }
+}
+
+export const createWsEvents = async () => {
+  return new VoiceChatSession().toWsEvents();
 };
