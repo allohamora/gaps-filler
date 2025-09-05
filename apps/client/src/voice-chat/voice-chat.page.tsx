@@ -1,11 +1,11 @@
 import { useState, type FC } from 'react';
-import { Button } from './components/ui/button';
+import { Button } from '@/components/ui/button';
 import { useWebSocket } from './hooks/use-web-socket';
 import { useMicrophone } from './hooks/use-microphone';
 import { usePlayer } from './hooks/use-player';
 import type { TextMessageChunk } from '@gaps-filler/api';
 
-export const App: FC = () => {
+export const VoiceChatPage: FC = () => {
   const [messages, setMessages] = useState<TextMessageChunk[]>([]);
   const [isStarted, setIsStarted] = useState(false);
 

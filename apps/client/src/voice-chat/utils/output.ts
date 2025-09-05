@@ -1,6 +1,6 @@
 // code was taken from https://github.com/elevenlabs/packages/tree/main/packages/client
-import { SAMPLE_RATE } from '@/constants/audio';
-import { loadAudioConcatProcessor } from '@/utils/worklet';
+import { SAMPLE_RATE } from '../voice-chat.constants';
+import { loadAudioConcatProcessor } from './worklet';
 
 export type OutputDeps = {
   context: AudioContext;

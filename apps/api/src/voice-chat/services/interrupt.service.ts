@@ -1,4 +1,4 @@
-import { createLogger } from '../libs/pino.lib.js';
+import { createLogger } from 'src/services/logger.service.js';
 
 export class InterruptError extends Error {
   constructor() {

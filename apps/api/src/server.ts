@@ -1,12 +1,12 @@
 import { AddressInfo } from 'node:net';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { v1Router } from './routers/v1.router.js';
 import { serve } from '@hono/node-server';
 import { NODE_ENV, PORT } from './config.js';
-import { createLogger } from './libs/pino.lib.js';
+import { createLogger } from './services/logger.service.js';
 import { createNodeWebSocket } from '@hono/node-ws';
-import { createWsEvents } from './services/ws.service.js';
+import { createWsEvents } from './voice-chat/voice-chat.service.js';
+import { v1Router } from './routers/v1.router.js';
 
 const logger = createLogger('server');
 

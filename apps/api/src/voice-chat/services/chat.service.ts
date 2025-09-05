@@ -1,8 +1,8 @@
 import { streamText, ModelMessage } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { GEMINI_API_KEY } from '../config.js';
+import { GEMINI_API_KEY } from 'src/config.js';
 import { PassThrough } from 'stream';
-import { createLogger } from '../libs/pino.lib.js';
+import { createLogger } from 'src/services/logger.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
 

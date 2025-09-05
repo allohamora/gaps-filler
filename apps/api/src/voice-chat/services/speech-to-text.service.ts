@@ -1,8 +1,8 @@
 import { createClient, LiveTranscriptionEvent, LiveTranscriptionEvents } from '@deepgram/sdk';
 import { once } from 'node:events';
-import { createLogger } from '../libs/pino.lib.js';
+import { createLogger } from 'src/services/logger.service.js';
 import { randomUUID } from 'node:crypto';
-import { CHANNELS, SAMPLE_RATE } from '../constants/audio.constants.js';
+import { CHANNELS, SAMPLE_RATE } from '../voice-chat.constants.js';
 import { DEEPGRAM_API_KEY } from 'src/config.js';
 
 export type OnTranscriptionOptions = {

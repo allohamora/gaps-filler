@@ -1,7 +1,7 @@
 import closeWithGrace from 'close-with-grace';
 import { promisify } from 'node:util';
 import { listen } from './server.js';
-import { createLogger } from './libs/pino.lib.js';
+import { createLogger } from './services/logger.service.js';
 
 const GRACEFUL_SHUTDOWN_DELAY = 15_000;
 

@@ -1,6 +1,6 @@
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { Chat } from './libs/chat.lib.js';
+import { Chat } from './services/chat.service.js';
 
 const main = async () => {
   const chat = new Chat();

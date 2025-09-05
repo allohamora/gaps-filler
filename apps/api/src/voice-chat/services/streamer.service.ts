@@ -1,8 +1,8 @@
 import { scheduler } from 'node:timers/promises';
-import { InterruptError } from 'src/utils/interrupt.utils.js';
-import { createLogger } from '../libs/pino.lib.js';
-import { Message } from '../types/ws.types.js';
-import { BYTES_PER_SAMPLE, SAMPLE_RATE } from '../constants/audio.constants.js';
+import { InterruptError } from './interrupt.service.js';
+import { createLogger } from 'src/services/logger.service.js';
+import { Message } from '../voice-chat.types.js';
+import { BYTES_PER_SAMPLE, SAMPLE_RATE } from '../voice-chat.constants.js';
 
 const BUFFER_SIZE = 640; // 640 bytes = 320 samples = 20ms of audio at 16kHz
 const EXPECTED_DURATION = BUFFER_SIZE / BYTES_PER_SAMPLE / SAMPLE_RATE; // 20ms

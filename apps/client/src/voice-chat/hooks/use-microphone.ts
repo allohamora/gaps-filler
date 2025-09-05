@@ -1,5 +1,5 @@
-import { arrayBufferToBase64 } from '@/utils/audio';
-import { Input } from '@/utils/input';
+import { arrayBufferToBase64 } from '../utils/audio';
+import { Input } from '../utils/input';
 import { useRef } from 'react';
 
 type UseMicrophoneOptions = {

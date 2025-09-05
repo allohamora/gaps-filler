@@ -1,5 +1,5 @@
-import { base64ToArrayBuffer } from '@/utils/audio';
-import { Output } from '@/utils/output';
+import { base64ToArrayBuffer } from '../utils/audio';
+import { Output } from '../utils/output';
 import { useRef } from 'react';
 
 export const usePlayer = () => {

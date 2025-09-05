@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { App } from '../app';
+import { VoiceChatPage } from '@/voice-chat/voice-chat.page';
 
 export const Route = createFileRoute('/')({
-  component: App,
+  component: VoiceChatPage,
 });

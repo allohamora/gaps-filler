@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { createLogger } from 'src/libs/pino.lib.js';
-import { SpeechToText } from 'src/libs/speech-to-text.lib.js';
-import { TextToSpeech } from 'src/libs/text-to-speech.lib.js';
-import { Chat } from 'src/libs/chat.lib.js';
+import { createLogger } from 'src/services/logger.service.js';
+import { SpeechToText } from './services/speech-to-text.service.js';
+import { TextToSpeech } from './services/text-to-speech.service.js';
+import { Chat } from './services/chat.service.js';
 import { Message } from 'src/export.js';
-import { interruptManager } from 'src/utils/interrupt.utils.js';
-import { streamer } from './streamer.service.js';
+import { interruptManager } from './services/interrupt.service.js';
+import { streamer } from './services/streamer.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 
 export const createWsEvents = async () => {

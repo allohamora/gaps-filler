@@ -1,11 +1,11 @@
 {
   "name": "@gaps-filler/api",
   "type": "module",
-  "main": "src/export.ts",
+  "main": "dist/export.js",
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "dev-chat": "tsx src/dev-chat.ts",
+    "dev-chat": "tsx src/voice-chat/dev-chat.script.ts",
     "build": "tsc -p ./tsconfig.build.json",
     "postbuild": "tsc-alias -p ./tsconfig.build.json",
     "start": "node dist/index.js",

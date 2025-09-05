@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { createLogger } from '../libs/pino.lib.js';
-import { CARTESIA_API_KEY, CARTESIA_VERSION } from '../config.js';
+import { createLogger } from 'src/services/logger.service.js';
+import { CARTESIA_API_KEY, CARTESIA_VERSION } from 'src/config.js';
 import { CartesiaClient, Cartesia } from '@cartesia/cartesia-js';
 import { WebSocketTtsRequest } from '@cartesia/cartesia-js/api/index.js';
-import { SAMPLE_RATE } from '../constants/audio.constants.js';
+import { SAMPLE_RATE } from '../voice-chat.constants.js';
 
 type CartesiaVersion = CartesiaClient['_options']['cartesiaVersion'];
 
