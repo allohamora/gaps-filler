@@ -1,7 +1,6 @@
 import { scheduler } from 'node:timers/promises';
 import { InterruptError } from './interrupt.service.js';
 import { createLogger } from 'src/services/logger.service.js';
-import { Message } from '../voice-chat.types.js';
 import { BYTES_PER_SAMPLE, SAMPLE_RATE } from '../voice-chat.constants.js';
 
 const BUFFER_SIZE = 640; // 640 bytes = 320 samples = 20ms of audio at 16kHz
@@ -20,8 +19,14 @@ type Strategy = {
   onSuccess?: () => void;
 } | null;
 
-class Streamer {
-  private logger = createLogger('streamer');
+export class StreamerSession {
+  private logger = createLogger('streamer-session');
+
+  private mainStrategy: Strategy = null;
+  private fallbackStrategy: Strategy = null;
+
+  private isSending = true;
+  private chunkTime = Date.now();
 
   private async *createVoiceStream(voice: AsyncGenerator<Buffer>) {
     for await (const chunk of voice) {
@@ -29,86 +34,69 @@ class Streamer {
     }
   }
 
-  public setup(sendMessage: (message: Message) => void) {
-    let mainStrategy: Strategy = null;
-    const fallbackStrategy: Strategy = null;
+  private setStrategy(strategy: Strategy) {
+    if (this.mainStrategy?.onInterrupt) {
+      this.mainStrategy.onInterrupt();
+    }
 
-    const setStrategy = (strategy: Strategy) => {
-      if (mainStrategy?.onInterrupt) {
-        mainStrategy.onInterrupt();
-      }
+    this.mainStrategy = strategy;
+  }
 
-      mainStrategy = strategy;
-    };
+  public interrupt() {
+    this.logger.debug({ msg: 'interrupt' });
 
-    const interrupt = () => {
-      this.logger.debug({ msg: 'interrupt' });
+    this.setStrategy(this.fallbackStrategy);
+  }
 
-      setStrategy(fallbackStrategy);
-    };
-
-    const streamVoice = async (voice: AsyncGenerator<Buffer>) => {
-      return await new Promise((res, rej) => {
-        setStrategy({
-          stream: this.createVoiceStream(voice),
-          onInterrupt: () => rej(new InterruptError()),
-          onSuccess: () => res(null),
-        });
+  public streamVoice = async (voice: AsyncGenerator<Buffer>) => {
+    return await new Promise((res, rej) => {
+      this.setStrategy({
+        stream: this.createVoiceStream(voice),
+        onInterrupt: () => rej(new InterruptError()),
+        onSuccess: () => res(null),
       });
-    };
+    });
+  };
 
-    let isSending = true;
-    let chunkTime = Date.now();
+  public async startSending(sendAudio: (audio: string) => void) {
+    this.logger.info({ msg: 'start sending' });
 
-    const startSending = async () => {
-      this.logger.info({ msg: 'start sending' });
+    while (this.isSending) {
+      if (this.mainStrategy === null) {
+        this.chunkTime += STRATEGY_CHECK_DELAY;
 
-      while (isSending) {
-        if (mainStrategy === null) {
-          chunkTime += STRATEGY_CHECK_DELAY;
-
-          const delay = chunkTime - Date.now();
-
-          if (delay > 0) {
-            await scheduler.wait(delay);
-          }
-          continue;
-        }
-
-        const { value, done } = await mainStrategy.stream.next();
-
-        if (done) {
-          mainStrategy.onSuccess?.();
-          mainStrategy = fallbackStrategy;
-          continue;
-        }
-
-        const duration = (value.length / BYTES_PER_SAMPLE / SAMPLE_RATE) * 1000;
-        const data = value.toString('base64');
-
-        chunkTime += duration;
-
-        const delay = chunkTime - Date.now();
-
-        sendMessage({ type: 'audio', data });
+        const delay = this.chunkTime - Date.now();
 
         if (delay > 0) {
           await scheduler.wait(delay);
         }
+        continue;
       }
-    };
 
-    const stopSending = () => {
-      isSending = false;
-    };
+      const { value, done } = await this.mainStrategy.stream.next();
 
-    return {
-      streamVoice,
-      interrupt,
-      startSending,
-      stopSending,
-    };
+      if (done) {
+        this.mainStrategy.onSuccess?.();
+        this.mainStrategy = this.fallbackStrategy;
+        continue;
+      }
+
+      const duration = (value.length / BYTES_PER_SAMPLE / SAMPLE_RATE) * 1000;
+      const data = value.toString('base64');
+
+      this.chunkTime += duration;
+
+      const delay = this.chunkTime - Date.now();
+
+      sendAudio(data);
+
+      if (delay > 0) {
+        await scheduler.wait(delay);
+      }
+    }
+  }
+
+  public stopSending() {
+    this.isSending = false;
   }
 }
-
-export const streamer = new Streamer();

@@ -3,9 +3,9 @@ import { createLogger } from 'src/services/logger.service.js';
 import { SpeechToTextSession } from './services/speech-to-text.service.js';
 import { TextToSpeechSession } from './services/text-to-speech.service.js';
 import { LlmSession } from './services/llm.service.js';
+import { StreamerSession } from './services/streamer.service.js';
 import { Message } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
-import { streamer } from './services/streamer.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 
 class VoiceChatSession {
@@ -14,11 +14,11 @@ class VoiceChatSession {
   private stt = new SpeechToTextSession();
   private tts = new TextToSpeechSession();
   private llm = new LlmSession();
+  private streamer = new StreamerSession();
 
   private ws?: WSContext<WebSocket>;
 
-  private stream = streamer.setup((message) => this.sendMessage(message));
-  private manager = interruptManager(() => this.stream.interrupt());
+  private manager = interruptManager(() => this.streamer.interrupt());
 
   private sendMessage(message: Message) {
     this.ws?.send(JSON.stringify(message));
@@ -30,7 +30,7 @@ class VoiceChatSession {
 
     this.ws = ws;
 
-    void this.stream.startSending();
+    void this.streamer.startSending((data) => this.sendMessage({ type: 'audio', data }));
 
     this.stt.onTranscription({
       onResult: async (data) => {
@@ -49,7 +49,7 @@ class VoiceChatSession {
           }
 
           await handler.ifContinue(
-            async () => await this.stream.streamVoice(this.tts.voiceStream(streamWithTranscription())),
+            async () => await this.streamer.streamVoice(this.tts.voiceStream(streamWithTranscription())),
           );
         });
       },
@@ -67,7 +67,7 @@ class VoiceChatSession {
   private async close() {
     await this.stt.close();
     this.tts.close?.();
-    this.stream.stopSending();
+    this.streamer.stopSending();
 
     this.logger.info({ msg: 'closed' });
   }
