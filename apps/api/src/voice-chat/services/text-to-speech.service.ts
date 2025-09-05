@@ -62,6 +62,8 @@ export class TextToSpeechSession {
         this.ws.continue({ ...body, transcript });
       }
 
+      // https://docs.cartesia.ai/api-reference/tts/working-with-web-sockets/contexts#example
+      // we need this to stop the streaming manually
       this.ws.send({ ...body, transcript: '', continue: false });
     };
 
