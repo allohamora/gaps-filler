@@ -1,5 +1,7 @@
 import { Word } from './services/speech-to-text.service.js';
 
+export type { Word };
+
 export type Message =
   | {
       type: 'transcription';
