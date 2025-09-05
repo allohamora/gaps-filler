@@ -8,7 +8,7 @@ const END = new Set(['.', '!', '?', ',', ';', ':']);
 
 export class LlmSession {
   private model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
-  private logger = createLogger('llm');
+  private logger = createLogger('llm-session');
   private messages: ModelMessage[] = [
     {
       role: 'system',

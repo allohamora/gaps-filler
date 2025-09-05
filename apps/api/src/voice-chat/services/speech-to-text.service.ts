@@ -16,7 +16,7 @@ const KEEP_ALIVE_INTERVAL = 10 * 1000;
 const client = createClient(DEEPGRAM_API_KEY);
 
 export class SpeechToTextSession {
-  private logger = createLogger('speech-to-text');
+  private logger = createLogger('speech-to-text-session');
 
   private live = client.listen.live({
     // https://developers.deepgram.com/docs/model
