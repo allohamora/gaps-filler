@@ -34,17 +34,22 @@ class VoiceChatSession {
 
     this.stt.onTranscription({
       onResult: async (data) => {
+        const transcription = data
+          .map(({ word }) => word)
+          .join(' ')
+          .trim();
+
         await this.manager.withHandler(async (handler) => {
-          const res = await handler.ifContinue(async () => await this.llm.stream(data));
+          const res = await handler.ifContinue(async () => await this.llm.stream(transcription));
           const sendMessage = this.sendMessage.bind(this);
 
           async function* streamWithTranscription() {
             const id = randomUUID();
 
-            for await (const content of res) {
-              sendMessage({ type: 'text', data: { id, content, role: 'assistant' } });
+            for await (const chunk of res) {
+              sendMessage({ type: 'answer', data: { id, chunk } });
 
-              yield content;
+              yield chunk;
             }
           }
 
@@ -53,8 +58,8 @@ class VoiceChatSession {
           );
         });
       },
-      onChunk: (transcript, id) => {
-        this.sendMessage({ type: 'text', data: { id, content: transcript, role: 'user' } });
+      onChunk: (chunk, id) => {
+        this.sendMessage({ type: 'transcription', data: { id, chunk } });
       },
       onText: () => {
         this.manager.interrupt();

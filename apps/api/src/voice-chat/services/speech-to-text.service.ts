@@ -5,10 +5,12 @@ import { randomUUID } from 'node:crypto';
 import { CHANNELS, SAMPLE_RATE } from '../voice-chat.constants.js';
 import { DEEPGRAM_API_KEY } from 'src/config.js';
 
+export type Word = { word: string; confidence: number };
+
 export type OnTranscriptionOptions = {
-  onResult: (transcription: string, id: string) => void | Promise<void>;
-  onChunk: (chunk: string, id: string) => void;
-  onText: (chunk: string) => void;
+  onResult: (transcription: Word[], id: string) => void | Promise<void>;
+  onChunk: (transcription: Word[], id: string) => void;
+  onText: (transcription: Word[]) => void;
 };
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000;
@@ -73,26 +75,20 @@ export class SpeechToTextSession {
 
   // https://developers.deepgram.com/docs/understanding-end-of-speech-detection#using-utteranceend-and-endpointing
   public onTranscription({ onResult, onChunk, onText }: OnTranscriptionOptions) {
-    let chunks: string[] = [];
+    let chunks: Word[] = [];
+
     let id: string = randomUUID();
 
-    const getTranscription = () => {
-      const transcription = chunks.join(' ').trim();
-      chunks = [];
-
-      return transcription;
-    };
-
     const sendTranscription = () => {
-      // can be ''
-      const transcription = getTranscription();
+      const transcription = chunks;
+      chunks = [];
 
       if (!id) {
         this.logger.error({ err: new Error('no request id') });
         return;
       }
 
-      if (transcription) {
+      if (transcription.length) {
         onResult(transcription, id);
       }
 
@@ -114,16 +110,18 @@ export class SpeechToTextSession {
     };
 
     const onTranscript = (data: LiveTranscriptionEvent) => {
-      const { transcript } = data.channel.alternatives[0] || {};
+      const { words } = data.channel.alternatives[0] || {};
       const { is_final, speech_final } = data;
 
-      if (transcript) {
+      const transcript = words?.map(({ punctuated_word, confidence }) => ({ word: punctuated_word, confidence }));
+
+      if (transcript?.length) {
         onText(transcript);
       }
 
-      if (transcript && is_final) {
+      if (transcript?.length && is_final) {
         onChunk(transcript, id);
-        chunks.push(transcript);
+        chunks.push(...transcript);
       }
 
       if (speech_final) {

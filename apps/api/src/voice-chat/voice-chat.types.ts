@@ -1,13 +1,19 @@
-export type TextMessageChunk = {
-  id: string;
-  content: string;
-  role: 'user' | 'assistant';
-};
+import { Word } from './services/speech-to-text.service.js';
 
 export type Message =
   | {
-      type: 'text';
-      data: TextMessageChunk; // chunk of the message
+      type: 'transcription';
+      data: {
+        id: string;
+        chunk: Word[]; // chunk of the message
+      };
+    }
+  | {
+      type: 'answer';
+      data: {
+        id: string;
+        chunk: string; // chunk of the message
+      };
     }
   | {
       type: 'audio';
