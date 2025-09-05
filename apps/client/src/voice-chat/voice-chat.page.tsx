@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useState, useRef, useEffect, type FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWebSocket } from './hooks/use-web-socket';
 import { useMicrophone } from './hooks/use-microphone';
@@ -7,17 +7,14 @@ import { cn } from '@/lib/utils';
 import type { Word } from '@gaps-filler/api';
 
 const getConfidenceColorClass = (confidence: number): string => {
-  if (confidence >= 0.9) {
-    return 'border-green-600';
-  } else if (confidence >= 0.7) {
-    return 'border-blue-600';
-  } else if (confidence >= 0.5) {
-    return 'border-yellow-600';
-  } else if (confidence >= 0.3) {
-    return 'border-orange-600';
-  } else {
-    return 'border-red-600';
-  }
+  // Tints + border to improve quick visual parsing; keeps accessible contrast.
+  if (confidence >= 0.9) return 'bg-green-100 dark:bg-green-500/15 border-green-600 text-green-800 dark:text-green-300';
+  if (confidence >= 0.7) return 'bg-blue-100 dark:bg-blue-500/15 border-blue-600 text-blue-800 dark:text-blue-300';
+  if (confidence >= 0.5)
+    return 'bg-yellow-100 dark:bg-yellow-500/20 border-yellow-600 text-yellow-800 dark:text-yellow-300';
+  if (confidence >= 0.3)
+    return 'bg-orange-100 dark:bg-orange-500/20 border-orange-600 text-orange-800 dark:text-orange-300';
+  return 'bg-red-100 dark:bg-red-500/15 border-red-600 text-red-800 dark:text-red-300';
 };
 
 export const VoiceChatPage: FC = () => {
@@ -25,6 +22,12 @@ export const VoiceChatPage: FC = () => {
     ({ id: string; content: string; author: 'ai' } | { id: string; content: Word[]; author: 'user' })[]
   >([]);
   const [isStarted, setIsStarted] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const { startPlaying, stopPlaying, enqueue } = usePlayer();
 
@@ -101,57 +104,122 @@ export const VoiceChatPage: FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center pt-10">
-      <div className="block w-full max-w-4xl px-4">
-        <div className="mb-6 text-center">
-          {isStarted ? <Button onClick={stop}>Stop</Button> : <Button onClick={start}>Start</Button>}
-        </div>
-
-        <div className="mb-4 rounded-lg border p-4">
-          <h3 className="text-muted-foreground mb-2 text-sm font-medium">Confidence Levels:</h3>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="inline-block rounded border border-green-600 px-2 py-1">High (90%+)</span>
-            <span className="inline-block rounded border border-blue-600 px-2 py-1">Good (70-89%)</span>
-            <span className="inline-block rounded border border-yellow-600 px-2 py-1">Medium (50-69%)</span>
-            <span className="inline-block rounded border border-orange-600 px-2 py-1">Low (30-49%)</span>
-            <span className="inline-block rounded border border-red-600 px-2 py-1">Very Low (&lt;30%)</span>
+    <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl flex-col gap-4 px-4 pb-8 pt-6">
+      {/* Control Bar */}
+      <div className="bg-card/50 supports-[backdrop-filter]:bg-card/40 flex flex-col gap-4 rounded-xl border p-4 backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              'relative inline-flex size-3 items-center justify-center rounded-full transition',
+              isStarted ? 'bg-green-500 animate-pulse shadow-[0_0_0_4px_rgba(34,197,94,0.35)]' : 'bg-muted',
+            )}
+            aria-label={isStarted ? 'Session active' : 'Session inactive'}
+          />
+          <div className="flex flex-col">
+            <h1 className="text-sm font-semibold tracking-tight">Voice Chat</h1>
+            <p className="text-muted-foreground text-xs">Real-time transcription + AI responses</p>
           </div>
         </div>
-
-        <div className="min-h-32 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={'rounded-lg border p-4'}>
-              <div className="mb-2 flex items-center gap-2">
-                <div className={'bg-primary size-2 rounded-full'} />
-                <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-                  {message.author}
-                </span>
-              </div>
-              <div className={'leading-relaxed'}>
-                {message.author === 'ai' ? (
-                  <div>{message.content}</div>
-                ) : (
-                  <div>
-                    {message.content.map(({ word, confidence }) => {
-                      return (
-                        <span
-                          key={`${message.id}-${word}-${confidence}`}
-                          className={cn(
-                            'inline-block px-1 py-0.5 mx-0.5 border-b text-sm',
-                            getConfidenceColorClass(confidence),
-                          )}
-                          title={`Confidence: ${(confidence * 100).toFixed(1)}%`}
-                        >
-                          {word}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2">
+          {isStarted ? (
+            <Button
+              onClick={stop}
+              variant="destructive"
+              className="h-10 px-6 font-semibold shadow-md transition hover:scale-[1.02]"
+            >
+              Stop
+            </Button>
+          ) : (
+            <Button onClick={start} className="h-10 px-6 font-semibold shadow-md transition hover:scale-[1.02]">
+              Start Session
+            </Button>
+          )}
         </div>
+      </div>
+
+      {/* Legend */}
+      <div className="bg-card/30 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-xs">
+        <span className="text-muted-foreground mr-1 font-medium">Confidence:</span>
+        <span className="rounded-md border border-green-600 bg-green-100 px-2 py-0.5 dark:bg-green-500/15">
+          High ≥90%
+        </span>
+        <span className="rounded-md border border-blue-600 bg-blue-100 px-2 py-0.5 dark:bg-blue-500/15">
+          Good 70–89%
+        </span>
+        <span className="rounded-md border border-yellow-600 bg-yellow-100 px-2 py-0.5 dark:bg-yellow-500/20">
+          Med 50–69%
+        </span>
+        <span className="rounded-md border border-orange-600 bg-orange-100 px-2 py-0.5 dark:bg-orange-500/20">
+          Low 30–49%
+        </span>
+        <span className="rounded-md border border-red-600 bg-red-100 px-2 py-0.5 dark:bg-red-500/15">Very &lt;30%</span>
+      </div>
+
+      {/* Messages */}
+      <div className="group relative flex-1 overflow-hidden rounded-xl border">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.04),transparent_60%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_60%)]" />
+        <div className="size-full overflow-y-auto scroll-smooth px-3 py-4 pr-2">
+          <div className="flex flex-col gap-4">
+            {messages.length === 0 && (
+              <div className="text-muted-foreground mx-auto mt-10 max-w-md text-center text-sm">
+                {isStarted
+                  ? 'Listening… start speaking to see transcription.'
+                  : 'Press Start Session to begin real-time voice chat.'}
+              </div>
+            )}
+            {messages.map((message) => {
+              const isAI = message.author === 'ai';
+              return (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'animate-in fade-in slide-in-from-bottom-1 rounded-xl border p-3 shadow-xs transition-colors md:p-4',
+                    isAI
+                      ? 'ml-0 mr-auto max-w-[80%] bg-secondary/60 dark:bg-secondary/40'
+                      : 'mr-0 ml-auto max-w-[85%] bg-accent/60 dark:bg-accent/30',
+                  )}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'size-2 rounded-full',
+                        isAI ? 'bg-primary' : 'bg-gradient-to-r from-blue-500 to-cyan-500',
+                      )}
+                    />
+                    <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
+                      {message.author}
+                    </span>
+                  </div>
+                  <div className="text-sm leading-relaxed">
+                    {isAI ? (
+                      <span className="whitespace-pre-wrap">{message.content}</span>
+                    ) : (
+                      <span className="flex flex-wrap">
+                        {message.content.map(({ word, confidence }) => (
+                          <span
+                            key={`${message.id}-${word}-${confidence}`}
+                            className={cn(
+                              'mx-0.5 mb-1 inline-flex select-text items-center rounded-md border px-1.5 py-0.5 font-medium leading-tight shadow-sm backdrop-blur transition hover:brightness-110',
+                              'text-[11px] md:text-xs',
+                              getConfidenceColorClass(confidence),
+                            )}
+                            title={`Confidence: ${(confidence * 100).toFixed(1)}%`}
+                          >
+                            {word}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={scrollRef} />
+          </div>
+        </div>
+      </div>
+      <div className="text-muted-foreground text-center text-[10px]">
+        Experimental – transcription chunks stream live; AI response assembles progressively.
       </div>
     </div>
   );
