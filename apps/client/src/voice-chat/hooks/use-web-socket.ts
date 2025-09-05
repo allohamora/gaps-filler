@@ -13,23 +13,12 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
   const webSocketRef = useRef<WebSocket>(null);
   const controllerRef = useRef<AbortController>(null);
 
-  const close = async () => {
+  const close = () => {
     if (!webSocketRef.current) {
       return;
     }
 
-    const { promise, resolve } = Promise.withResolvers<void>();
-
-    webSocketRef.current.addEventListener(
-      'close',
-      () => {
-        resolve();
-      },
-      { signal: controllerRef.current?.signal, once: true },
-    );
-
     webSocketRef.current.close();
-    await promise;
 
     if (controllerRef.current) {
       controllerRef.current.abort();
@@ -39,15 +28,9 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
     webSocketRef.current = null;
   };
 
-  const open = async () => {
-    if (webSocketRef.current) {
-      await close();
-    }
-
+  const open = () => {
     controllerRef.current = new AbortController();
     webSocketRef.current = api.v1.ws.$ws();
-
-    const { promise, resolve } = Promise.withResolvers<void>();
 
     webSocketRef.current.addEventListener(
       'open',
@@ -80,28 +63,18 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
       },
       { signal: controllerRef.current.signal },
     );
-
-    webSocketRef.current?.addEventListener(
-      'open',
-      () => {
-        resolve();
-      },
-      { signal: controllerRef.current?.signal, once: true },
-    );
-
-    await promise;
   };
 
   const send = (message: Message) => {
     if (!webSocketRef.current) {
-      console.error('WebSocket is not found');
+      console.error(new Error('WebSocket is not found'));
       return;
     }
 
     if (webSocketRef.current.readyState === WebSocket.OPEN) {
       webSocketRef.current.send(JSON.stringify(message));
     } else {
-      console.error(`Cannot send message, WebSocket is not open (state: ${webSocketRef.current.readyState})`);
+      console.warn(`Cannot send message, WebSocket is not open (state: ${webSocketRef.current.readyState})`);
     }
   };
 

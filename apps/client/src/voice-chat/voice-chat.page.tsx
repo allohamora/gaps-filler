@@ -73,7 +73,7 @@ export const VoiceChatPage: FC = () => {
       }
     },
     onClose: async () => {
-      await stopWithoutClose();
+      await stop();
     },
   });
 
@@ -84,24 +84,20 @@ export const VoiceChatPage: FC = () => {
   });
 
   const start = async () => {
-    await open();
+    open();
     await startListening();
     await startPlaying();
     setIsStarted(true);
     setMessages([]);
   };
 
-  async function stopWithoutClose() {
+  async function stop() {
     await stopPlaying();
     await stopListening();
     setIsStarted(false);
-  }
-
-  const stop = async () => {
-    await stopWithoutClose();
     send({ type: 'finish' });
-    await close();
-  };
+    close();
+  }
 
   return (
     <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl flex-col gap-4 px-4 pb-8 pt-6">
