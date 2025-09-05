@@ -25,6 +25,8 @@ export class TextToSpeechSession {
 
   public init = async () => {
     await this.ws.connect();
+
+    this.logger.info({ msg: 'initialized' });
   };
 
   public close = () => {
@@ -36,7 +38,7 @@ export class TextToSpeechSession {
   public async *voiceStream(stream: AsyncGenerator<string>) {
     const { value } = await stream.next();
     if (!value) {
-      this.logger.error({ msg: 'stream is empty' });
+      this.logger.error({ err: new Error('stream is empty') });
       return;
     }
 

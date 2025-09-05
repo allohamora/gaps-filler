@@ -14,7 +14,7 @@ export type InterruptHandler = {
   runWithoutInterruptException: <T>(fn: () => T) => Promise<T | null>;
 };
 
-const logger = createLogger('interrupt.utils');
+const logger = createLogger('interrupt.service');
 
 export const interruptManager = (onInterrupt?: () => void) => {
   let isBlocked = false;

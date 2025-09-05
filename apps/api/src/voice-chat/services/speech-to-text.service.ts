@@ -54,6 +54,8 @@ export class SpeechToTextSession {
     }, KEEP_ALIVE_INTERVAL);
 
     this.live.addListener(LiveTranscriptionEvents.Close, this.onClose);
+
+    this.logger.info({ msg: 'initialized' });
   }
 
   public async close() {
@@ -61,6 +63,8 @@ export class SpeechToTextSession {
 
     this.live.requestClose();
     this.live.removeAllListeners();
+
+    this.logger.info({ msg: 'closed' });
   }
 
   public transcript(buffer: Buffer) {
@@ -84,7 +88,7 @@ export class SpeechToTextSession {
       const transcription = getTranscription();
 
       if (!id) {
-        this.logger.error('No request id');
+        this.logger.error({ err: new Error('no request id') });
         return;
       }
 
@@ -96,9 +100,9 @@ export class SpeechToTextSession {
     };
 
     const onUtteranceEnd = () => {
-      this.logger.info('[utterance-end]');
-
       const isIgnored = !chunks.length;
+
+      this.logger.info({ msg: 'utterance-end', isIgnored });
 
       // https://github.com/nikolawhallon/temp-utterance-end?tab=readme-ov-file#using-both
       // https://github.com/orgs/deepgram/discussions/980
