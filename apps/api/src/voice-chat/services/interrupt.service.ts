@@ -10,21 +10,15 @@ export type InterruptHandler = {
   isInterrupted: () => boolean;
   ifContinue: <T>(fn: () => T) => T;
   getId: () => number;
-  block: () => void;
   runWithoutInterruptException: <T>(fn: () => T) => Promise<T | null>;
 };
 
 const logger = createLogger('interrupt.service');
 
 export const interruptManager = (onInterrupt?: () => void) => {
-  let isBlocked = false;
   let current = 0;
 
   const interrupt = () => {
-    if (isBlocked) {
-      return;
-    }
-
     current++;
 
     onInterrupt?.();
@@ -45,7 +39,7 @@ export const interruptManager = (onInterrupt?: () => void) => {
   };
 
   const handler = (): InterruptHandler => {
-    const id = isBlocked ? -1 : ++current;
+    const id = ++current;
     const isInterrupted = () => id !== current;
     const ifContinue = <T>(fn: () => T) => {
       if (isInterrupted()) {
@@ -55,9 +49,7 @@ export const interruptManager = (onInterrupt?: () => void) => {
       return fn();
     };
 
-    const block = () => (isBlocked = true);
-
-    return { isInterrupted, ifContinue, block, runWithoutInterruptException, getId: () => id };
+    return { isInterrupted, ifContinue, runWithoutInterruptException, getId: () => id };
   };
 
   const withHandler = async <T>(fn: (handler: InterruptHandler) => T): Promise<T | null> => {
