@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "dev-llm": "tsx src/voice-chat/llm.script.ts",
+    "dev-llm": "tsx src/voice-chat/dev-llm.script.ts",
     "build": "tsc -p ./tsconfig.build.json",
     "postbuild": "tsc-alias -p ./tsconfig.build.json",
     "start": "node dist/index.js",
