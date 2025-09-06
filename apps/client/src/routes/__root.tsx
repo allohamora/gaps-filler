@@ -35,6 +35,13 @@ export const Route = createRootRoute({
               >
                 Text Chat
               </Link>
+              <Link
+                to="/mistakes"
+                activeProps={{ className: 'text-primary font-semibold' }}
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Mistakes
+              </Link>
             </div>
           </div>
         </nav>

@@ -8,6 +8,7 @@ import { createNodeWebSocket } from '@hono/node-ws';
 import { createVoiceChatWsEvents } from './voice-chat/voice-chat.service.js';
 import { v1Router } from './routers/v1.router.js';
 import { createTextChatWsEvents } from './text-chat/text-chat.service.js';
+import { dbService } from './services/db.service.js';
 
 const logger = createLogger('server');
 
@@ -22,6 +23,8 @@ export const app = hono
   .route('/v1', v1Router);
 
 export const listen = async (port = PORT) => {
+  await dbService.init();
+
   const { promise, resolve } = Promise.withResolvers<AddressInfo>();
 
   const server = serve({ fetch: app.fetch, port }, (info) => {

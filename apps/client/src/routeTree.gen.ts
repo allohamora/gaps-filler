@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoiceChatRouteImport } from './routes/voice-chat'
 import { Route as TextChatRouteImport } from './routes/text-chat'
+import { Route as MistakesRouteImport } from './routes/mistakes'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VoiceChatRoute = VoiceChatRouteImport.update({
@@ -23,6 +24,11 @@ const TextChatRoute = TextChatRouteImport.update({
   path: '/text-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MistakesRoute = MistakesRouteImport.update({
+  id: '/mistakes',
+  path: '/mistakes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mistakes': typeof MistakesRoute
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mistakes': typeof MistakesRoute
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mistakes': typeof MistakesRoute
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/text-chat' | '/voice-chat'
+  fullPaths: '/' | '/mistakes' | '/text-chat' | '/voice-chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/text-chat' | '/voice-chat'
-  id: '__root__' | '/' | '/text-chat' | '/voice-chat'
+  to: '/' | '/mistakes' | '/text-chat' | '/voice-chat'
+  id: '__root__' | '/' | '/mistakes' | '/text-chat' | '/voice-chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MistakesRoute: typeof MistakesRoute
   TextChatRoute: typeof TextChatRoute
   VoiceChatRoute: typeof VoiceChatRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TextChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mistakes': {
+      id: '/mistakes'
+      path: '/mistakes'
+      fullPath: '/mistakes'
+      preLoaderRoute: typeof MistakesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MistakesRoute: MistakesRoute,
   TextChatRoute: TextChatRoute,
   VoiceChatRoute: VoiceChatRoute,
 }

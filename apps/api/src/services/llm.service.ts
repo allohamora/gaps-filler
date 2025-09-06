@@ -3,6 +3,7 @@ import { streamText, ModelMessage, tool, stepCountIs } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
 import { createLogger } from './logger.service.js';
+import { dbService } from './db.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
 
@@ -91,8 +92,9 @@ export class LlmSession {
               }),
             ),
           }),
-          execute: ({ mistakes }) => {
+          execute: async ({ mistakes }) => {
             this.logger.info({ msg: 'reported mistakes', mistakes });
+            await dbService.createMistakes(mistakes);
 
             onMistakes?.(mistakes);
           },
