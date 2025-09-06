@@ -24,6 +24,16 @@ class VoiceChatSession {
     this.ws?.send(JSON.stringify(message));
   }
 
+  private async *streamWithTranscription(stream: AsyncIterable<string>) {
+    const id = randomUUID();
+
+    for await (const chunk of stream) {
+      this.sendMessage({ type: 'answer', data: { id, chunk } });
+
+      yield chunk;
+    }
+  }
+
   private async open(ws: WSContext<WebSocket>) {
     await this.stt.init();
     await this.tts.init?.();
@@ -40,21 +50,10 @@ class VoiceChatSession {
           .trim();
 
         await this.manager.withHandler(async (handler) => {
-          const res = handler.ifContinue(() => this.llm.stream(transcription));
-          const sendMessage = this.sendMessage.bind(this);
-
-          async function* streamWithTranscription() {
-            const id = randomUUID();
-
-            for await (const chunk of res) {
-              sendMessage({ type: 'answer', data: { id, chunk } });
-
-              yield chunk;
-            }
-          }
+          const stream = handler.ifContinue(() => this.llm.stream(transcription));
 
           await handler.ifContinue(
-            async () => await this.streamer.streamVoice(this.tts.voiceStream(streamWithTranscription())),
+            async () => await this.streamer.streamVoice(this.tts.voiceStream(this.streamWithTranscription(stream))),
           );
         });
       },
