@@ -6,6 +6,13 @@ import { createLogger } from 'src/services/logger.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
 
+export type Mistake = {
+  mistake: string;
+  correct: string;
+  topic: string;
+  practice: string;
+};
+
 const PROMPT = `ROLE: You are a patient, natural English conversation teacher. Primary goal: sustain engaging dialogue. Secondary goal: silently capture genuine grammar mistakes (not mere informality) from the user's latest message via the reportMistakes tool.
 
 CONVERSATION STYLE:
@@ -63,7 +70,7 @@ export class LlmSession {
     this.messages.push({ role: 'assistant', content: content.trim() });
   }
 
-  public stream(message: string) {
+  public stream(message: string, onMistakes?: (mistakes: Mistake[]) => void) {
     this.messages.push({ role: 'user', content: message });
 
     const { textStream } = streamText({
@@ -85,7 +92,9 @@ export class LlmSession {
             ),
           }),
           execute: ({ mistakes }) => {
-            this.logger.info({ msg: 'User reported mistakes', mistakes });
+            this.logger.info({ msg: 'reported mistakes', mistakes });
+
+            onMistakes?.(mistakes);
           },
         }),
       },

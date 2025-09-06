@@ -1,6 +1,7 @@
+import { Mistake } from './services/llm.service.js';
 import { Word } from './services/speech-to-text.service.js';
 
-export type { Word };
+export type { Word, Mistake };
 
 export type Message =
   | {
@@ -8,6 +9,13 @@ export type Message =
       data: {
         id: string;
         chunk: Word[]; // chunk of the message
+      };
+    }
+  | {
+      type: 'mistakes';
+      data: {
+        id: string;
+        mistakes: Mistake[];
       };
     }
   | {

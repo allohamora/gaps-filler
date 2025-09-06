@@ -43,14 +43,18 @@ class VoiceChatSession {
     void this.streamer.startSending((data) => this.sendMessage({ type: 'audio', data }));
 
     this.stt.onTranscription({
-      onResult: async (data) => {
+      onResult: async (data, id) => {
         const transcription = data
           .map(({ word }) => word)
           .join(' ')
           .trim();
 
         await this.manager.withHandler(async (handler) => {
-          const stream = handler.ifContinue(() => this.llm.stream(transcription));
+          const stream = handler.ifContinue(() =>
+            this.llm.stream(transcription, (mistakes) =>
+              this.sendMessage({ type: 'mistakes', data: { id, mistakes } }),
+            ),
+          );
 
           await handler.ifContinue(
             async () => await this.streamer.streamVoice(this.tts.voiceStream(this.streamWithTranscription(stream))),

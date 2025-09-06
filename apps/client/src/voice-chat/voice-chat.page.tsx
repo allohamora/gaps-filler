@@ -4,7 +4,7 @@ import { useWebSocket } from './hooks/use-web-socket';
 import { useMicrophone } from './hooks/use-microphone';
 import { usePlayer } from './hooks/use-player';
 import { cn } from '@/lib/utils';
-import type { Word } from '@gaps-filler/api';
+import type { Word, Mistake } from '@gaps-filler/api';
 
 const getConfidenceColorClass = (confidence: number): string => {
   // Tints + border to improve quick visual parsing; keeps accessible contrast.
@@ -19,7 +19,10 @@ const getConfidenceColorClass = (confidence: number): string => {
 
 export const VoiceChatPage: FC = () => {
   const [messages, setMessages] = useState<
-    ({ id: string; content: string; author: 'ai' } | { id: string; content: Word[]; author: 'user' })[]
+    (
+      | { id: string; content: string; author: 'ai' }
+      | { id: string; content: Word[]; author: 'user'; mistakes?: Mistake[] }
+    )[]
   >([]);
   const [isStarted, setIsStarted] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +50,14 @@ export const VoiceChatPage: FC = () => {
 
           return [...prev, { id: event.data.id, content: event.data.chunk, author: 'user' }];
         });
+      }
+
+      if (event.type === 'mistakes') {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === event.data.id && m.author === 'user' ? { ...m, mistakes: event.data.mistakes } : m,
+          ),
+        );
       }
 
       if (event.type === 'answer') {
@@ -190,21 +201,44 @@ export const VoiceChatPage: FC = () => {
                     {isAI ? (
                       <span className="whitespace-pre-wrap">{message.content}</span>
                     ) : (
-                      <span className="flex flex-wrap">
-                        {message.content.map(({ word, confidence }) => (
-                          <span
-                            key={`${message.id}-${word}-${confidence}`}
-                            className={cn(
-                              'mx-0.5 mb-1 inline-flex select-text items-center rounded-md border px-1.5 py-0.5 font-medium leading-tight shadow-sm backdrop-blur transition hover:brightness-110',
-                              'text-[11px] md:text-xs',
-                              getConfidenceColorClass(confidence),
-                            )}
-                            title={`Confidence: ${(confidence * 100).toFixed(1)}%`}
-                          >
-                            {word}
-                          </span>
-                        ))}
-                      </span>
+                      <div className="flex flex-col gap-2">
+                        <span className="flex flex-wrap">
+                          {message.content.map(({ word, confidence }) => (
+                            <span
+                              key={`${message.id}-${word}-${confidence}`}
+                              className={cn(
+                                'mx-0.5 mb-1 inline-flex select-text items-center rounded-md border px-1.5 py-0.5 font-medium leading-tight shadow-sm backdrop-blur transition hover:brightness-110',
+                                'text-[11px] md:text-xs',
+                                getConfidenceColorClass(confidence),
+                              )}
+                              title={`Confidence: ${(confidence * 100).toFixed(1)}%`}
+                            >
+                              {word}
+                            </span>
+                          ))}
+                        </span>
+                        {!!message.mistakes?.length && (
+                          <div className="mt-1 space-y-2">
+                            {message.mistakes.map((m, idx) => (
+                              <div
+                                key={`${message.id}-mistake-${idx}`}
+                                className="rounded-md border border-rose-400/60 bg-rose-50/80 px-2 py-1 text-[11px] shadow-sm md:text-xs dark:border-rose-400/30 dark:bg-rose-500/10"
+                              >
+                                <div className="font-semibold text-rose-700 dark:text-rose-300">
+                                  {m.topic || 'Grammar issue'}
+                                </div>
+                                <div className="mt-0.5">
+                                  <span className="line-through decoration-rose-500/70">{m.mistake}</span>{' '}
+                                  <span className="font-medium">→ {m.correct}</span>
+                                </div>
+                                {m.practice && (
+                                  <div className="text-muted-foreground mt-0.5 opacity-80">{m.practice}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
