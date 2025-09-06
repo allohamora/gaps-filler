@@ -108,6 +108,6 @@ class VoiceChatSession {
   }
 }
 
-export const createWsEvents = async () => {
+export const createVoiceChatWsEvents = async () => {
   return new VoiceChatSession().toWsEvents();
 };

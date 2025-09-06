@@ -1,6 +1,6 @@
+import { LandingPage } from '@/landing/landing.page';
 import { createFileRoute } from '@tanstack/react-router';
-import { VoiceChatPage } from '@/voice-chat/voice-chat.page';
 
 export const Route = createFileRoute('/')({
-  component: VoiceChatPage,
+  component: LandingPage,
 });

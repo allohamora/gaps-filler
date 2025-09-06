@@ -30,7 +30,7 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
 
   const open = () => {
     controllerRef.current = new AbortController();
-    webSocketRef.current = api.v1.ws.$ws();
+    webSocketRef.current = api.v1.ws['voice-chat'].$ws();
 
     webSocketRef.current.addEventListener(
       'open',
