@@ -7,17 +7,10 @@ const rl = readline.createInterface({ input, output });
 
 while (true) {
   const input = await rl.question('User: ');
-
   const stream = await llm.stream(input);
 
-  let isFirstChunk = true;
+  const chunks = await stream.toArray();
+  const response = chunks.join('').trim();
 
-  for await (const chunk of stream) {
-    if (isFirstChunk) {
-      console.log(`Assistant: ${chunk}`);
-      isFirstChunk = false;
-    } else {
-      console.log(chunk);
-    }
-  }
+  console.log(`Assistant: ${response}`);
 }
