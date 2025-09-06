@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoiceChatRouteImport } from './routes/voice-chat'
+import { Route as TextChatRouteImport } from './routes/text-chat'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VoiceChatRoute = VoiceChatRouteImport.update({
   id: '/voice-chat',
   path: '/voice-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TextChatRoute = TextChatRouteImport.update({
+  id: '/text-chat',
+  path: '/text-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/voice-chat'
+  fullPaths: '/' | '/text-chat' | '/voice-chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/voice-chat'
-  id: '__root__' | '/' | '/voice-chat'
+  to: '/' | '/text-chat' | '/voice-chat'
+  id: '__root__' | '/' | '/text-chat' | '/voice-chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TextChatRoute: typeof TextChatRoute
   VoiceChatRoute: typeof VoiceChatRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/voice-chat'
       fullPath: '/voice-chat'
       preLoaderRoute: typeof VoiceChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/text-chat': {
+      id: '/text-chat'
+      path: '/text-chat'
+      fullPath: '/text-chat'
+      preLoaderRoute: typeof TextChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TextChatRoute: TextChatRoute,
   VoiceChatRoute: VoiceChatRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,15 +1,14 @@
-import { api } from '@/lib/api';
-import type { Message } from '@gaps-filler/api';
 import { useRef } from 'react';
 
-type UseWebSocketOptions = {
-  onMessage?: (message: Message) => void;
+type UseWebSocketOptions<T> = {
+  onMessage?: (message: T) => void;
   onOpen?: () => void;
   onClose?: (event: CloseEvent) => void;
   onError?: (event: Event) => void;
+  getClient: () => WebSocket;
 };
 
-export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSocketOptions = {}) => {
+export const useWebSocket = <T>({ onMessage, onOpen, onClose, onError, getClient }: UseWebSocketOptions<T>) => {
   const webSocketRef = useRef<WebSocket>(null);
   const controllerRef = useRef<AbortController>(null);
 
@@ -30,7 +29,7 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
 
   const open = () => {
     controllerRef.current = new AbortController();
-    webSocketRef.current = api.v1.ws['voice-chat'].$ws();
+    webSocketRef.current = getClient();
 
     webSocketRef.current.addEventListener(
       'open',
@@ -65,7 +64,7 @@ export const useWebSocket = ({ onMessage, onOpen, onClose, onError }: UseWebSock
     );
   };
 
-  const send = (message: Message) => {
+  const send = (message: T) => {
     if (!webSocketRef.current) {
       console.error(new Error('WebSocket is not found'));
       return;

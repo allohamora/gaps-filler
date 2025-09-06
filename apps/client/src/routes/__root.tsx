@@ -28,6 +28,13 @@ export const Route = createRootRoute({
               >
                 Voice Chat
               </Link>
+              <Link
+                to="/text-chat"
+                activeProps={{ className: 'text-primary font-semibold' }}
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Text Chat
+              </Link>
             </div>
           </div>
         </nav>

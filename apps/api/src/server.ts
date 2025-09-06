@@ -7,6 +7,7 @@ import { createLogger } from './services/logger.service.js';
 import { createNodeWebSocket } from '@hono/node-ws';
 import { createVoiceChatWsEvents } from './voice-chat/voice-chat.service.js';
 import { v1Router } from './routers/v1.router.js';
+import { createTextChatWsEvents } from './text-chat/text-chat.service.js';
 
 const logger = createLogger('server');
 
@@ -17,6 +18,7 @@ const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app: hono })
 export const app = hono
   .use(cors())
   .get('/v1/ws/voice-chat', upgradeWebSocket(createVoiceChatWsEvents))
+  .get('/v1/ws/text-chat', upgradeWebSocket(createTextChatWsEvents))
   .route('/v1', v1Router);
 
 export const listen = async (port = PORT) => {

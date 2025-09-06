@@ -1,9 +1,9 @@
-import { Mistake } from './services/llm.service.js';
+import { Mistake } from '../services/llm.service.js';
 import { Word } from './services/speech-to-text.service.js';
 
-export type { Word, Mistake };
+export type { Word };
 
-export type Message =
+export type VoiceChatMessage =
   | {
       type: 'transcription';
       data: {

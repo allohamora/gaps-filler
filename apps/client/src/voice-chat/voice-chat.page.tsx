@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, type FC } from 'react';
 import { Button } from '@/components/ui/button';
-import { useWebSocket } from './hooks/use-web-socket';
 import { useMicrophone } from './hooks/use-microphone';
 import { usePlayer } from './hooks/use-player';
 import { cn } from '@/lib/utils';
-import type { Word, Mistake } from '@gaps-filler/api';
+import type { Word, Mistake, VoiceChatMessage } from '@gaps-filler/api';
+import { useWebSocket } from '@/hooks/use-web-socket';
+import { api } from '@/lib/api';
 
 const getConfidenceColorClass = (confidence: number): string => {
   // Tints + border to improve quick visual parsing; keeps accessible contrast.
@@ -34,7 +35,7 @@ export const VoiceChatPage: FC = () => {
 
   const { startPlaying, stopPlaying, enqueue } = usePlayer();
 
-  const { open, close, send } = useWebSocket({
+  const { open, close, send } = useWebSocket<VoiceChatMessage>({
     onMessage: (event) => {
       if (event.type === 'transcription') {
         setMessages((prev) => {
@@ -86,6 +87,7 @@ export const VoiceChatPage: FC = () => {
     onClose: async () => {
       await stop();
     },
+    getClient: () => api.v1.ws['voice-chat'].$ws(),
   });
 
   const { startListening, stopListening } = useMicrophone({

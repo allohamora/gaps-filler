@@ -2,7 +2,7 @@ import z from 'zod';
 import { streamText, ModelMessage, tool, stepCountIs } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
-import { createLogger } from 'src/services/logger.service.js';
+import { createLogger } from './logger.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
 

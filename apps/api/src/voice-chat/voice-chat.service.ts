@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
 import { SpeechToTextSession } from './services/speech-to-text.service.js';
-import { LlmSession } from './services/llm.service.js';
+import { LlmSession } from '../services/llm.service.js';
 import { StreamerSession } from './services/streamer.service.js';
-import { Message } from 'src/export.js';
+import { VoiceChatMessage } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 import { DeepgramTextToSpeechSession } from './text-to-speech/deepgram.text-to-speech.js';
@@ -21,7 +21,7 @@ class VoiceChatSession {
 
   private manager = interruptManager(() => this.streamer.interrupt());
 
-  private sendMessage(message: Message) {
+  private sendMessage(message: VoiceChatMessage) {
     this.ws?.send(JSON.stringify(message));
   }
 
@@ -82,7 +82,7 @@ class VoiceChatSession {
   }
 
   private handleMessage(event: MessageEvent) {
-    const message: Message = JSON.parse(event.data.toString());
+    const message: VoiceChatMessage = JSON.parse(event.data.toString());
 
     if (message.type === 'audio') {
       this.stt.transcript(Buffer.from(message.data, 'base64'));
