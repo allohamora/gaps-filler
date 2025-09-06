@@ -2,7 +2,6 @@ import z from 'zod';
 import { streamText, ModelMessage, tool, stepCountIs } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
-import { PassThrough } from 'stream';
 import { createLogger } from 'src/services/logger.service.js';
 
 const END = new Set(['.', '!', '?', ',', ';', ':']);
@@ -37,7 +36,34 @@ export class LlmSession {
     },
   ];
 
-  public async stream(message: string) {
+  // we need to iterate this whole stream to prevent cases when message are missing in the output
+  private async *iterateStream(textStream: AsyncIterable<string>) {
+    let content = '';
+    let block = '';
+
+    for await (const chunk of textStream) {
+      content += chunk;
+
+      for (const char of chunk) {
+        block += char;
+
+        if (END.has(char)) {
+          yield block;
+          block = '';
+        }
+      }
+    }
+
+    const trimmedBlock = block.trim();
+    if (trimmedBlock.length > 0) {
+      yield trimmedBlock;
+      block = '';
+    }
+
+    this.messages.push({ role: 'assistant', content: content.trim() });
+  }
+
+  public stream(message: string) {
     this.messages.push({ role: 'user', content: message });
 
     const { textStream } = streamText({
@@ -58,48 +84,13 @@ export class LlmSession {
               }),
             ),
           }),
-          execute: async ({ mistakes }) => {
+          execute: ({ mistakes }) => {
             this.logger.info({ msg: 'User reported mistakes', mistakes });
           },
         }),
       },
     });
 
-    const stream = new PassThrough({ encoding: 'utf-8' });
-
-    // we need to iterate this whole stream to prevent cases when message are missing in the output
-    const iterateResult = async () => {
-      let content = '';
-      let block = '';
-
-      for await (const chunk of textStream) {
-        content += chunk;
-
-        for (const char of chunk) {
-          block += char;
-
-          if (END.has(char)) {
-            stream.write(block);
-            block = '';
-          }
-        }
-      }
-
-      const trimmedBlock = block.trim();
-      if (trimmedBlock.length > 0) {
-        stream.write(trimmedBlock);
-        block = '';
-      }
-
-      this.messages.push({ role: 'assistant', content: content.trim() });
-
-      stream.end();
-    };
-
-    void iterateResult().catch((err) => {
-      this.logger.error({ err });
-    });
-
-    return stream;
+    return this.iterateStream(textStream);
   }
 }

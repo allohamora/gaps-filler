@@ -40,7 +40,7 @@ class VoiceChatSession {
           .trim();
 
         await this.manager.withHandler(async (handler) => {
-          const res = await handler.ifContinue(async () => await this.llm.stream(transcription));
+          const res = handler.ifContinue(() => this.llm.stream(transcription));
           const sendMessage = this.sendMessage.bind(this);
 
           async function* streamWithTranscription() {
