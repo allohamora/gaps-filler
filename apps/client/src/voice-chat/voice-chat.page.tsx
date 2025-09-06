@@ -151,13 +151,13 @@ export const VoiceChatPage: FC = () => {
           High ≥90%
         </span>
         <span className="rounded-md border border-blue-600 bg-blue-100 px-2 py-0.5 dark:bg-blue-500/15">
-          Good 70–89%
+          Good 70-89%
         </span>
         <span className="rounded-md border border-yellow-600 bg-yellow-100 px-2 py-0.5 dark:bg-yellow-500/20">
-          Med 50–69%
+          Med 50-69%
         </span>
         <span className="rounded-md border border-orange-600 bg-orange-100 px-2 py-0.5 dark:bg-orange-500/20">
-          Low 30–49%
+          Low 30-49%
         </span>
         <span className="rounded-md border border-red-600 bg-red-100 px-2 py-0.5 dark:bg-red-500/15">Very &lt;30%</span>
       </div>
@@ -248,9 +248,9 @@ export const VoiceChatPage: FC = () => {
           </div>
         </div>
       </div>
-      <div className="text-muted-foreground text-center text-[10px]">
-        Experimental – transcription chunks stream live; AI response assembles progressively.
-      </div>
+      <footer className="text-muted-foreground text-center text-[10px]">
+        Experimental - transcription chunks stream live; AI response assembles progressively.
+      </footer>
     </div>
   );
 };
