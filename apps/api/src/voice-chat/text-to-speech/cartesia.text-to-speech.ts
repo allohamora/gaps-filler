@@ -4,6 +4,7 @@ import { CARTESIA_API_KEY, CARTESIA_VERSION } from 'src/config.js';
 import { CartesiaClient, Cartesia } from '@cartesia/cartesia-js';
 import { WebSocketTtsRequest } from '@cartesia/cartesia-js/api/index.js';
 import { SAMPLE_RATE } from '../voice-chat.constants.js';
+import { TextToSpeechStrategy } from './text-to-speech.strategy.js';
 
 type CartesiaVersion = CartesiaClient['_options']['cartesiaVersion'];
 
@@ -14,8 +15,8 @@ const client = new CartesiaClient({
   cartesiaVersion: CARTESIA_VERSION as CartesiaVersion,
 });
 
-export class TextToSpeechSession {
-  private logger = createLogger('text-to-speech-session');
+export class CartesiaTextToSpeechSession implements TextToSpeechStrategy {
+  private logger = createLogger('cartesia-text-to-speech-session');
 
   private ws = client.tts.websocket({
     container: 'raw',

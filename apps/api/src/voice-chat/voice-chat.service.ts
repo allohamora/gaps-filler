@@ -1,18 +1,19 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
 import { SpeechToTextSession } from './services/speech-to-text.service.js';
-import { TextToSpeechSession } from './services/text-to-speech.service.js';
 import { LlmSession } from './services/llm.service.js';
 import { StreamerSession } from './services/streamer.service.js';
 import { Message } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
+import { DeepgramTextToSpeechSession } from './text-to-speech/deepgram.text-to-speech.js';
+import { TextToSpeechStrategy } from './text-to-speech/text-to-speech.strategy.js';
 
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
 
   private stt = new SpeechToTextSession();
-  private tts = new TextToSpeechSession();
+  private tts: TextToSpeechStrategy = new DeepgramTextToSpeechSession();
   private llm = new LlmSession();
   private streamer = new StreamerSession();
 
