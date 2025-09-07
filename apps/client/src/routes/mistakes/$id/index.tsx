@@ -51,28 +51,26 @@ function MistakeDetailPage() {
             </p>
             <div className="text-muted-foreground text-xs">Topic: {data.topic || 'Grammar'}</div>
           </header>
-          {!data.article && (
-            <div>
-              <Button onClick={analyze} disabled={isAnalyzing}>
-                {isAnalyzing ? 'Analyzing...' : 'Analyze'}
-              </Button>
-            </div>
-          )}
           {data.article && (
             <article
               className="prose prose-sm dark:prose-invert markdown-body [&.markdown-body]:bg-inherit! max-w-none"
               dangerouslySetInnerHTML={{ __html: parse(data.article) }}
             />
           )}
-          {data.questions && data.questions.length > 0 && (
-            <div>
-              <Button asChild>
-                <Link to="/mistakes/$id/practice" params={{ id }}>
+          {data.questions && data.questions.length > 0 && <div></div>}
+          <div className="flex justify-between">
+            <Button onClick={analyze} disabled={isAnalyzing}>
+              {isAnalyzing ? 'Analyzing...' : 'Analyze'}
+            </Button>
+
+            {data.questions && data.questions.length > 0 && (
+              <Button variant="secondary" disabled={isAnalyzing} asChild>
+                <Link to="/mistakes/$id/practice" disabled={isAnalyzing} params={{ id }}>
                   Practice
                 </Link>
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>
