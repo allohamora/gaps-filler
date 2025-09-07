@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import type { TextChatMessage, Mistake } from '@gaps-filler/api';
 import { useWebSocket } from '@/hooks/use-web-socket';
 import { api } from '@/lib/api';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface BaseMessage {
   id: string;
@@ -26,7 +25,6 @@ export const TextChatPage: FC = () => {
   const [messages, setMessages] = useState<Array<UserMessage | AIMessage>>([]);
   const [input, setInput] = useState('');
   const [isStarted, setIsStarted] = useState(false);
-  const queryClient = useQueryClient();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -37,8 +35,6 @@ export const TextChatPage: FC = () => {
   const { open, close, send } = useWebSocket<TextChatMessage>({
     onMessage: (event) => {
       if (event.type === 'mistakes') {
-        queryClient.invalidateQueries({ queryKey: ['mistakes'] });
-
         setMessages((prev) =>
           prev.map((m) =>
             m.id === event.data.id && m.author === 'user' ? { ...m, mistakes: event.data.mistakes } : m,

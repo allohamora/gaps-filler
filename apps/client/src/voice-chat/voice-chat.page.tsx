@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import type { Word, Mistake, VoiceChatMessage } from '@gaps-filler/api';
 import { useWebSocket } from '@/hooks/use-web-socket';
 import { api } from '@/lib/api';
-import { useQueryClient } from '@tanstack/react-query';
 
 const getConfidenceColorClass = (confidence: number): string => {
   // Tints + border to improve quick visual parsing; keeps accessible contrast.
@@ -28,7 +27,6 @@ export const VoiceChatPage: FC = () => {
   >([]);
   const [isStarted, setIsStarted] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const queryClient = useQueryClient();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -56,8 +54,6 @@ export const VoiceChatPage: FC = () => {
       }
 
       if (event.type === 'mistakes') {
-        queryClient.invalidateQueries({ queryKey: ['mistakes'] });
-
         setMessages((prev) =>
           prev.map((m) =>
             m.id === event.data.id && m.author === 'user' ? { ...m, mistakes: event.data.mistakes } : m,

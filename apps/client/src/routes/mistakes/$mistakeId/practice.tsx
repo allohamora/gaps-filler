@@ -1,24 +1,25 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import type { AnalyzableMistake, Question } from '@gaps-filler/api';
+import type { Question } from '@gaps-filler/api';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/mistakes/$mistakeId/practice')({
+  loader: async ({ params: { mistakeId } }) => {
+    const res = await api.v1.mistakes[':mistakeId'].$get({ param: { mistakeId } });
+
+    if (res.status === 404) {
+      throw new Error('Not Found');
+    }
+
+    return await res.json();
+  },
   component: PracticePage,
 });
 
 function PracticePage() {
   const { mistakeId } = Route.useParams();
-  const { data, isLoading, isError, error } = useQuery<AnalyzableMistake, Error>({
-    queryKey: ['mistake', mistakeId],
-    queryFn: async () => {
-      const res: Response = await api.v1.mistakes[':mistakeId'].$get({ param: { mistakeId } });
-      if (!res.ok) throw new Error(`Failed ${res.status}`);
-      return (await res.json()) as AnalyzableMistake;
-    },
-  });
+  const data = Route.useLoaderData();
 
   const questions: Question[] = data?.questions || [];
   const [current, setCurrent] = useState(0);
@@ -56,8 +57,6 @@ function PracticePage() {
           </Link>
         </Button>
       </div>
-      {isLoading && <div className="text-muted-foreground text-sm">Loading…</div>}
-      {isError && <div className="text-sm text-rose-500">{error?.message}</div>}
       {data && questions.length === 0 && (
         <div className="text-muted-foreground text-sm">No questions generated yet. Analyze the mistake first.</div>
       )}
