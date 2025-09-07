@@ -1,10 +1,10 @@
-import { Mistake } from './services/llm.service.js';
-import { Question, AnalyzableMistake } from './mistake/mistake.repository.js';
-import { app } from './server.js';
+export { Mistake } from './services/llm.service.js';
+export { SavedMistake } from './mistake/mistake.repository.js';
+export { ChoosingExercise, WritingExercise, Difficulty } from './mistake/services/exercise.service.js';
 
 export * from './voice-chat/voice-chat.types.js';
 export * from './text-chat/text-chat.types.js';
 
-export type app = typeof app;
+import { app } from './server.js';
 
-export type { Mistake, Question, AnalyzableMistake };
+export type app = typeof app;

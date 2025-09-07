@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { mistakesRepository } from './mistake.repository.js';
-import { analyzeMistakeById } from './mistake.service.js';
+import { analyzeMistake } from './mistake.service.js';
 
 export const mistakesRouter = new Hono()
   .get('/', async (c) => {
@@ -10,14 +10,11 @@ export const mistakesRouter = new Hono()
   })
   .get('/:id', async (c) => {
     const id = c.req.param('id');
-    const mistake = mistakesRepository.getMistakeById(id);
-    if (!mistake) {
-      return c.json({ message: 'mistake not found' }, 404);
-    }
-    return c.json(mistake);
+
+    return c.json(mistakesRepository.getMistakeById(id));
   })
   .post('/:id/analyze', async (c) => {
     const id = c.req.param('id');
 
-    return c.json(await analyzeMistakeById(id));
+    return c.json(await analyzeMistake(id));
   });

@@ -2,15 +2,15 @@ import { JSONFilePreset } from 'lowdb/node';
 import { Mistake } from '../services/llm.service.js';
 import { Low } from 'lowdb';
 import { randomUUID } from 'node:crypto';
+import { Exercises } from './services/exercise.service.js';
 
-export type Question = {
-  question: string;
-  options: { value: string; isCorrect: boolean }[];
+export type SavedMistake = Mistake & {
+  id: string;
+  summary?: string;
+  exercises?: Exercises;
 };
 
-export type AnalyzableMistake = Mistake & { id: string; article?: string; questions?: Question[] };
-
-type Data = { mistakes: AnalyzableMistake[] };
+type Data = { mistakes: SavedMistake[] };
 
 class MistakesRepository {
   private db: Low<Data>;
@@ -31,19 +31,22 @@ class MistakesRepository {
   }
 
   public getMistakeById(mistakeId: string) {
-    return this.db.data.mistakes.find((m) => m.id === mistakeId);
-  }
+    const mistake = this.db.data.mistakes.find((m) => m.id === mistakeId);
 
-  public async updateMistake(mistakeId: string, update: Partial<AnalyzableMistake>) {
-    const mistake = this.getMistakeById(mistakeId);
     if (!mistake) {
       throw new Error('mistake is not found');
     }
 
+    return mistake;
+  }
+
+  public async updateMistake(mistakeId: string, update: Partial<SavedMistake>) {
+    const mistake = this.getMistakeById(mistakeId);
+
     const result = Object.assign(mistake, update);
     await this.db.write();
 
-    return result as AnalyzableMistake;
+    return result as SavedMistake;
   }
 }
 
