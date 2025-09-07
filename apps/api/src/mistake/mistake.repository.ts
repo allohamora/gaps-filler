@@ -26,11 +26,11 @@ class MistakesRepository {
     await this.db.write();
   }
 
-  public async getMistakes(): Promise<Mistake[]> {
+  public async getMistakes() {
     return this.db.data.mistakes;
   }
 
-  public getMistakeById(mistakeId: string): Mistake | undefined {
+  public getMistakeById(mistakeId: string) {
     return this.db.data.mistakes.find((m) => m.id === mistakeId);
   }
 
