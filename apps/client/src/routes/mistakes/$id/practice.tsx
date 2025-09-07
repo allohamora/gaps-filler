@@ -4,9 +4,9 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-export const Route = createFileRoute('/mistakes/$mistakeId/practice')({
-  loader: async ({ params: { mistakeId } }) => {
-    const res = await api.v1.mistakes[':mistakeId'].$get({ param: { mistakeId } });
+export const Route = createFileRoute('/mistakes/$id/practice')({
+  loader: async ({ params: { id } }) => {
+    const res = await api.v1.mistakes[':id'].$get({ param: { id } });
 
     if (res.status === 404) {
       throw new Error('Not Found');
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/mistakes/$mistakeId/practice')({
 });
 
 function PracticePage() {
-  const { mistakeId } = Route.useParams();
+  const { id } = Route.useParams();
   const data = Route.useLoaderData();
 
   const questions: Question[] = data?.questions || [];
@@ -47,12 +47,12 @@ function PracticePage() {
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col gap-6 px-4 pb-10 pt-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link to="/mistakes/$mistakeId" params={{ mistakeId }}>
+          <Link to="/mistakes/$id" params={{ id }}>
             ← Back
           </Link>
         </Button>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/mistakes/$mistakeId" params={{ mistakeId }}>
+          <Link to="/mistakes/$id" params={{ id }}>
             Article
           </Link>
         </Button>

@@ -35,8 +35,8 @@ function MistakesPage() {
                 <Link
                   key={id}
                   className="animate-in fade-in slide-in-from-bottom-1 bg-card/60 flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm backdrop-blur"
-                  to="/mistakes/$mistakeId"
-                  params={{ mistakeId: id }}
+                  to="/mistakes/$id"
+                  params={{ id }}
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center rounded-md border border-rose-400/50 bg-rose-50/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:border-rose-400/30 dark:bg-rose-500/10 dark:text-rose-300">

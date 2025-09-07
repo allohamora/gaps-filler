@@ -13,8 +13,8 @@ import { Route as VoiceChatRouteImport } from './routes/voice-chat'
 import { Route as TextChatRouteImport } from './routes/text-chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MistakesIndexRouteImport } from './routes/mistakes/index'
-import { Route as MistakesMistakeIdIndexRouteImport } from './routes/mistakes/$mistakeId/index'
-import { Route as MistakesMistakeIdPracticeRouteImport } from './routes/mistakes/$mistakeId/practice'
+import { Route as MistakesIdIndexRouteImport } from './routes/mistakes/$id/index'
+import { Route as MistakesIdPracticeRouteImport } from './routes/mistakes/$id/practice'
 
 const VoiceChatRoute = VoiceChatRouteImport.update({
   id: '/voice-chat',
@@ -36,33 +36,32 @@ const MistakesIndexRoute = MistakesIndexRouteImport.update({
   path: '/mistakes/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MistakesMistakeIdIndexRoute = MistakesMistakeIdIndexRouteImport.update({
-  id: '/mistakes/$mistakeId/',
-  path: '/mistakes/$mistakeId/',
+const MistakesIdIndexRoute = MistakesIdIndexRouteImport.update({
+  id: '/mistakes/$id/',
+  path: '/mistakes/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MistakesMistakeIdPracticeRoute =
-  MistakesMistakeIdPracticeRouteImport.update({
-    id: '/mistakes/$mistakeId/practice',
-    path: '/mistakes/$mistakeId/practice',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const MistakesIdPracticeRoute = MistakesIdPracticeRouteImport.update({
+  id: '/mistakes/$id/practice',
+  path: '/mistakes/$id/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
   '/mistakes': typeof MistakesIndexRoute
-  '/mistakes/$mistakeId/practice': typeof MistakesMistakeIdPracticeRoute
-  '/mistakes/$mistakeId': typeof MistakesMistakeIdIndexRoute
+  '/mistakes/$id/practice': typeof MistakesIdPracticeRoute
+  '/mistakes/$id': typeof MistakesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
   '/mistakes': typeof MistakesIndexRoute
-  '/mistakes/$mistakeId/practice': typeof MistakesMistakeIdPracticeRoute
-  '/mistakes/$mistakeId': typeof MistakesMistakeIdIndexRoute
+  '/mistakes/$id/practice': typeof MistakesIdPracticeRoute
+  '/mistakes/$id': typeof MistakesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,8 +69,8 @@ export interface FileRoutesById {
   '/text-chat': typeof TextChatRoute
   '/voice-chat': typeof VoiceChatRoute
   '/mistakes/': typeof MistakesIndexRoute
-  '/mistakes/$mistakeId/practice': typeof MistakesMistakeIdPracticeRoute
-  '/mistakes/$mistakeId/': typeof MistakesMistakeIdIndexRoute
+  '/mistakes/$id/practice': typeof MistakesIdPracticeRoute
+  '/mistakes/$id/': typeof MistakesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,24 +79,24 @@ export interface FileRouteTypes {
     | '/text-chat'
     | '/voice-chat'
     | '/mistakes'
-    | '/mistakes/$mistakeId/practice'
-    | '/mistakes/$mistakeId'
+    | '/mistakes/$id/practice'
+    | '/mistakes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/text-chat'
     | '/voice-chat'
     | '/mistakes'
-    | '/mistakes/$mistakeId/practice'
-    | '/mistakes/$mistakeId'
+    | '/mistakes/$id/practice'
+    | '/mistakes/$id'
   id:
     | '__root__'
     | '/'
     | '/text-chat'
     | '/voice-chat'
     | '/mistakes/'
-    | '/mistakes/$mistakeId/practice'
-    | '/mistakes/$mistakeId/'
+    | '/mistakes/$id/practice'
+    | '/mistakes/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,8 +104,8 @@ export interface RootRouteChildren {
   TextChatRoute: typeof TextChatRoute
   VoiceChatRoute: typeof VoiceChatRoute
   MistakesIndexRoute: typeof MistakesIndexRoute
-  MistakesMistakeIdPracticeRoute: typeof MistakesMistakeIdPracticeRoute
-  MistakesMistakeIdIndexRoute: typeof MistakesMistakeIdIndexRoute
+  MistakesIdPracticeRoute: typeof MistakesIdPracticeRoute
+  MistakesIdIndexRoute: typeof MistakesIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,18 +138,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MistakesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mistakes/$mistakeId/': {
-      id: '/mistakes/$mistakeId/'
-      path: '/mistakes/$mistakeId'
-      fullPath: '/mistakes/$mistakeId'
-      preLoaderRoute: typeof MistakesMistakeIdIndexRouteImport
+    '/mistakes/$id/': {
+      id: '/mistakes/$id/'
+      path: '/mistakes/$id'
+      fullPath: '/mistakes/$id'
+      preLoaderRoute: typeof MistakesIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mistakes/$mistakeId/practice': {
-      id: '/mistakes/$mistakeId/practice'
-      path: '/mistakes/$mistakeId/practice'
-      fullPath: '/mistakes/$mistakeId/practice'
-      preLoaderRoute: typeof MistakesMistakeIdPracticeRouteImport
+    '/mistakes/$id/practice': {
+      id: '/mistakes/$id/practice'
+      path: '/mistakes/$id/practice'
+      fullPath: '/mistakes/$id/practice'
+      preLoaderRoute: typeof MistakesIdPracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -161,8 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   TextChatRoute: TextChatRoute,
   VoiceChatRoute: VoiceChatRoute,
   MistakesIndexRoute: MistakesIndexRoute,
-  MistakesMistakeIdPracticeRoute: MistakesMistakeIdPracticeRoute,
-  MistakesMistakeIdIndexRoute: MistakesMistakeIdIndexRoute,
+  MistakesIdPracticeRoute: MistakesIdPracticeRoute,
+  MistakesIdIndexRoute: MistakesIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

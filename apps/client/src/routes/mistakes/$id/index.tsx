@@ -6,9 +6,9 @@ import { parse } from 'marked';
 /// @ts-expect-error not type definitions
 import 'github-markdown-css';
 
-export const Route = createFileRoute('/mistakes/$mistakeId/')({
-  loader: async ({ params: { mistakeId } }) => {
-    const res = await api.v1.mistakes[':mistakeId'].$get({ param: { mistakeId } });
+export const Route = createFileRoute('/mistakes/$id/')({
+  loader: async ({ params: { id } }) => {
+    const res = await api.v1.mistakes[':id'].$get({ param: { id } });
 
     if (res.status === 404) {
       throw new Error('Not Found');
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/mistakes/$mistakeId/')({
 });
 
 function MistakeDetailPage() {
-  const { mistakeId } = Route.useParams();
+  const { id } = Route.useParams();
   const data = Route.useLoaderData();
   const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -28,7 +28,7 @@ function MistakeDetailPage() {
   const analyze = async () => {
     setIsAnalyzing(true);
 
-    await api.v1.mistakes.analyze.$post({ json: { mistakeId } });
+    await api.v1.mistakes.analyze.$post({ json: { id } });
     await router.invalidate();
 
     setIsAnalyzing(false);
@@ -67,7 +67,7 @@ function MistakeDetailPage() {
           {data.questions && data.questions.length > 0 && (
             <div>
               <Button asChild>
-                <Link to="/mistakes/$mistakeId/practice" params={{ mistakeId }}>
+                <Link to="/mistakes/$id/practice" params={{ id }}>
                   Practice
                 </Link>
               </Button>

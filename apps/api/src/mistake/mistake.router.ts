@@ -10,16 +10,16 @@ export const mistakesRouter = new Hono()
 
     return c.json(mistakes);
   })
-  .get('/:mistakeId', async (c) => {
-    const id = c.req.param('mistakeId');
+  .get('/:id', async (c) => {
+    const id = c.req.param('id');
     const mistake = mistakesRepository.getMistakeById(id);
     if (!mistake) {
       return c.json({ message: 'mistake not found' }, 404);
     }
     return c.json(mistake);
   })
-  .post('/analyze', zValidator('json', z.object({ mistakeId: z.string() })), async (c) => {
-    const { mistakeId } = c.req.valid('json');
+  .post('/analyze', zValidator('json', z.object({ id: z.string() })), async (c) => {
+    const { id } = c.req.valid('json');
 
-    return c.json(await analyzeMistakeById(mistakeId));
+    return c.json(await analyzeMistakeById(id));
   });
