@@ -28,7 +28,7 @@ function MistakeDetailPage() {
   const analyze = async () => {
     setIsAnalyzing(true);
 
-    await api.v1.mistakes.analyze.$post({ json: { id } });
+    await api.v1.mistakes[':id'].analyze.$post({ param: { id } });
     await router.invalidate();
 
     setIsAnalyzing(false);
