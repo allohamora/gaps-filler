@@ -1,42 +1,37 @@
 import z from 'zod';
-import { streamText, ModelMessage, tool, stepCountIs } from 'ai';
+import { generateObject, ModelMessage } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
-import { createLogger } from './logger.service.js';
-import { mistakesRepository } from '../mistake/mistake.repository.js';
-
-const END = new Set(['.', '!', '?', ',', ';', ':']);
 
 export type Mistake = {
-  mistake: string;
+  incorrect: string;
   correct: string;
   topic: string;
-  practice: string;
+  explanation: string;
 };
 
-const PROMPT = `ROLE: You are a patient, natural English conversation teacher. Primary goal: sustain engaging dialogue. Secondary goal: silently capture genuine grammar mistakes (not mere informality) from the user's latest message via the reportMistakes tool.
+const PROMPT = `You are a professional English language teacher who is experienced in one to one chatting.
+The user want to find and correct their grammar mistakes, and he is expecting you to help him with that.
+Your task is to keep a conversation with a user and return all mistakes that you notice to help him.
 
-CONVERSATION STYLE:
-- Max 1-2 sentences per turn.
-- Usually end with an open question (vary wh-, follow-ups, opinions, hypotheticals) to elicit different grammar (tenses, conditionals, modals, passive, comparatives, articles, pronouns, aspect).
-- Natural plain text only: no lists, bullets, emojis, asterisks, quotes for emphasis, or stage directions.
+Answer requirements:
+- max 1-2 sentences.
+- natural plain text only: no lists, bullets, emojis, asterisks, quotes for emphasis, or stage directions.
+- do not correct the user: just keep the conversation going.
 
-MISTAKE TOOL USAGE:
-- Examine ONLY the user’s latest message.
-- ONLY report clear grammar errors (agreement, tense, aspect, articles, pronoun case, verb form, conditional structure, missing auxiliaries, preposition misuse, word order).
+Mistakes requirements:
+- conditional sentence with errors in both clauses => one mistake.
+- misspelling does not count as a mistake.
 
-GRANULARITY:
-- Each distinct grammar concept = one object.
-- Do not split a single verb phrase error into multiple parts.
-- Conditional sentence with errors in BOTH clauses => ONE object containing the full erroneous sentence as mistake and the fully corrected sentence as correct; topic: "[type] conditional"; practice: guidance with clause forms (e.g. "forming second conditional sentences (if + past simple, would + base form)").
-
-EXAMPLES (ILLUSTRATIVE ONLY - DO NOT ECHO):
-User: "I went to store" -> mistake: I went to store | correct: I went to the store | topic: definite vs indefinite articles | practice: distinguishing between definite and indefinite articles (the vs a/an)
-User: "if I was you I were bigger" -> mistake: if I was you I were bigger | correct: if I were you I would be bigger | topic: second conditional | practice: forming second conditional sentences (if + past simple, would + base form)`;
+Examples (illustrative only - do not echo):
+User: "She don’t likes coffee" -> incorrect: She don’t likes coffee | correct: She doesn’t like coffee | topic: subject–verb agreement (don’t vs doesn’t) | explanation: Whom was used as the subject, which violates subject vs. object rules.
+User: "I have visited Paris last year" -> incorrect: I have visited Paris last year. | correct: I visited Paris last year. | topic: verb tense (present perfect vs simple past) | explanation: The present perfect tense is not used with specific past time expressions like "last year."
+User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs."
+User: "If I was you, I was a doctor" -> incorrect: If I was you, I was a doctor | correct: If I were you, I would be a doctor | topic: second conditional (was vs were) (was vs would be) | explanation: In hypothetical conditional sentences, "were" is used instead of "was" for all subjects, "would be" is used instead of "was" to express the consequence.`;
 
 export class LlmSession {
   private model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
-  private logger = createLogger('llm-session');
+
   private messages: ModelMessage[] = [
     {
       role: 'system',
@@ -44,64 +39,30 @@ export class LlmSession {
     },
   ];
 
-  // we need to iterate this whole stream to prevent cases when message are missing in the output
-  private async *iterateStream(textStream: AsyncIterable<string>) {
-    let content = '';
-    let block = '';
-
-    for await (const chunk of textStream) {
-      content += chunk;
-
-      for (const char of chunk) {
-        block += char;
-
-        if (END.has(char)) {
-          yield block;
-          block = '';
-        }
-      }
-    }
-
-    const trimmedBlock = block.trim();
-    if (trimmedBlock.length > 0) {
-      yield trimmedBlock;
-      block = '';
-    }
-
-    this.messages.push({ role: 'assistant', content: content.trim() });
-  }
-
-  public stream(message: string, onMistakes?: (mistakes: Mistake[]) => void) {
+  public async send(message: string) {
     this.messages.push({ role: 'user', content: message });
 
-    const { textStream } = streamText({
+    const { object } = await generateObject({
       temperature: 0.8,
       model: this.model,
       messages: this.messages,
-      stopWhen: stepCountIs(2),
-      tools: {
-        reportMistakes: tool({
-          description: 'Use this tool to report grammar mistakes made by the user in their last message.',
-          inputSchema: z.object({
-            mistakes: z.array(
-              z.object({
-                mistake: z.string(),
-                correct: z.string(),
-                topic: z.string(),
-                practice: z.string(),
-              }),
-            ),
-          }),
-          execute: async ({ mistakes }) => {
-            this.logger.info({ msg: 'reported mistakes', mistakes });
-            await mistakesRepository.createMistakes(mistakes);
-
-            onMistakes?.(mistakes);
-          },
-        }),
-      },
+      schema: z.object({
+        answer: z.string(),
+        mistakes: z
+          .array(
+            z.object({
+              incorrect: z.string(),
+              correct: z.string(),
+              topic: z.string(),
+              explanation: z.string(),
+            }),
+          )
+          .optional(),
+      }),
     });
 
-    return this.iterateStream(textStream);
+    this.messages.push({ role: 'assistant', content: JSON.stringify(object) });
+
+    return object;
   }
 }

@@ -2,6 +2,7 @@ import z from 'zod';
 import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
+import { Mistake } from 'src/export.js';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -32,7 +33,7 @@ Your exercises requirements:
 - writing exercises should force student to write full sentences
 - writing exercises should have only one possible answer based on the instruction, they should not be open-ended`;
 
-export const generateExercises = async (mistake: string) => {
+export const generateExercises = async (mistake: Mistake) => {
   const { object } = await generateObject({
     temperature: 1,
     model,
@@ -43,7 +44,7 @@ export const generateExercises = async (mistake: string) => {
       },
       {
         role: 'user',
-        content: mistake,
+        content: JSON.stringify(mistake),
       },
     ],
     schema: z.object({

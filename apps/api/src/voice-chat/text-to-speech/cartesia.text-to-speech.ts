@@ -78,4 +78,28 @@ export class CartesiaTextToSpeechSession implements TextToSpeechStrategy {
       }
     }
   }
+
+  public async *voice(transcript: string) {
+    const res = await client.tts.sse({
+      modelId: 'sonic-turbo',
+      voice: {
+        mode: 'id',
+        // "Pleasant Man"
+        id: '729651dc-c6c3-4ee5-97fa-350da1f88600',
+      },
+      language: 'en',
+      transcript,
+      outputFormat: {
+        container: 'raw',
+        encoding: 'pcm_s16le',
+        sampleRate: SAMPLE_RATE,
+      },
+    });
+
+    for await (const event of res) {
+      if (event.type === 'chunk') {
+        yield Buffer.from(event.data, 'base64');
+      }
+    }
+  }
 }

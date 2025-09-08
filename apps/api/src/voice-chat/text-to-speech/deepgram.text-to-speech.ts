@@ -7,9 +7,9 @@ import { TextToSpeechStrategy } from './text-to-speech.strategy.js';
 const client = createClient(DEEPGRAM_API_KEY);
 
 export class DeepgramTextToSpeechSession implements TextToSpeechStrategy {
-  public async *voiceStream(stream: AsyncGenerator<string>) {
+  public async *voice(text: string) {
     const res = await client.speak.request(
-      { text: await text(stream) },
+      { text },
       {
         container: 'none',
         model: 'aura-2-thalia-en',
@@ -26,5 +26,9 @@ export class DeepgramTextToSpeechSession implements TextToSpeechStrategy {
     for await (const chunk of response) {
       yield Buffer.from(chunk);
     }
+  }
+
+  public async *voiceStream(stream: AsyncGenerator<string>) {
+    return yield* this.voice(await text(stream));
   }
 }

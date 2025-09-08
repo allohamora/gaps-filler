@@ -230,11 +230,11 @@ export const VoiceChatPage: FC = () => {
                                   {m.topic || 'Grammar issue'}
                                 </div>
                                 <div className="mt-0.5">
-                                  <span className="line-through decoration-rose-500/70">{m.mistake}</span>{' '}
+                                  <span className="line-through decoration-rose-500/70">{m.incorrect}</span>{' '}
                                   <span className="font-medium">→ {m.correct}</span>
                                 </div>
-                                {m.practice && (
-                                  <div className="text-muted-foreground mt-0.5 opacity-80">{m.practice}</div>
+                                {m.explanation && (
+                                  <div className="text-muted-foreground mt-0.5 opacity-80">{m.explanation}</div>
                                 )}
                               </div>
                             ))}

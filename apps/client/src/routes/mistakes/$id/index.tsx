@@ -46,10 +46,13 @@ function MistakeDetailPage() {
           <header className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight">Mistake Explanation</h1>
             <p className="text-muted-foreground text-sm">
-              <span className="line-through decoration-rose-500/70">{data.mistake}</span>{' '}
+              <span className="line-through decoration-rose-500/70">{data.incorrect}</span>{' '}
               <span className="font-medium">→ {data.correct}</span>
             </p>
             <div className="text-muted-foreground text-xs">Topic: {data.topic || 'Grammar'}</div>
+            <div className="text-muted-foreground text-xs">
+              Explanation: {data.explanation || 'No explanation available.'}
+            </div>
           </header>
           {data.summary && (
             <article

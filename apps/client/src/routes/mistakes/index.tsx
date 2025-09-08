@@ -30,7 +30,7 @@ function MistakesPage() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(0,0,0,0.04),transparent_65%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05),transparent_65%)]" />
         {mistakes.length > 0 && (
           <div className="grid max-h-full grid-cols-1 gap-4 overflow-y-auto p-2 md:grid-cols-2 lg:grid-cols-3">
-            {mistakes.map(({ id, topic, mistake, correct, practice }, idx) => {
+            {mistakes.map(({ id, topic, incorrect, correct, explanation }, idx) => {
               return (
                 <Link
                   key={id}
@@ -45,10 +45,10 @@ function MistakesPage() {
                     <span className="text-muted-foreground text-[10px] opacity-70">#{mistakes.length - idx}</span>
                   </div>
                   <div className="whitespace-pre-wrap leading-relaxed">
-                    <span className="line-through decoration-rose-500/70">{mistake}</span>{' '}
+                    <span className="line-through decoration-rose-500/70">{incorrect}</span>{' '}
                     <span className="font-medium">→ {correct}</span>
                   </div>
-                  <div className="text-muted-foreground text-[11px] leading-snug opacity-80">{practice}</div>
+                  <div className="text-muted-foreground text-[11px] leading-snug opacity-80">{explanation}</div>
                 </Link>
               );
             })}

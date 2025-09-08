@@ -8,6 +8,7 @@ import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 import { DeepgramTextToSpeechSession } from './text-to-speech/deepgram.text-to-speech.js';
 import { TextToSpeechStrategy } from './text-to-speech/text-to-speech.strategy.js';
+import { mistakesRepository } from 'src/mistake/mistake.repository.js';
 
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
@@ -23,16 +24,6 @@ class VoiceChatSession {
 
   private sendMessage(message: VoiceChatMessage) {
     this.ws?.send(JSON.stringify(message));
-  }
-
-  private async *streamWithTranscription(stream: AsyncIterable<string>) {
-    const id = randomUUID();
-
-    for await (const chunk of stream) {
-      this.sendMessage({ type: 'answer', data: { id, chunk } });
-
-      yield chunk;
-    }
   }
 
   private async open(ws: WSContext<WebSocket>) {
@@ -51,15 +42,16 @@ class VoiceChatSession {
           .trim();
 
         await this.manager.withHandler(async (handler) => {
-          const stream = handler.ifContinue(() =>
-            this.llm.stream(transcription, (mistakes) =>
-              this.sendMessage({ type: 'mistakes', data: { id, mistakes } }),
-            ),
-          );
+          const { answer, mistakes } = await handler.ifContinue(async () => await this.llm.send(transcription));
 
-          await handler.ifContinue(
-            async () => await this.streamer.streamVoice(this.tts.voiceStream(this.streamWithTranscription(stream))),
-          );
+          if (mistakes?.length) {
+            await mistakesRepository.createMistakes(mistakes);
+            this.sendMessage({ type: 'mistakes', data: { id, mistakes } });
+          }
+
+          this.sendMessage({ type: 'answer', data: { id: randomUUID(), chunk: answer } });
+
+          await handler.ifContinue(async () => await this.streamer.streamVoice(this.tts.voice(answer)));
         });
       },
       onChunk: (chunk, id) => {

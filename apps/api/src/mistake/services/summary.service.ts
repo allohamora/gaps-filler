@@ -2,6 +2,7 @@ import z from 'zod';
 import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { GEMINI_API_KEY } from 'src/config.js';
+import { Mistake } from 'src/export.js';
 
 const model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
 
@@ -15,7 +16,7 @@ Your summary should contain:
 - examples and counterexamples
 - conclusion with key takeaways`;
 
-export const generateSummary = async (mistake: string) => {
+export const generateSummary = async (mistake: Mistake) => {
   const { object } = await generateObject({
     temperature: 0.8,
     model,
@@ -26,7 +27,7 @@ export const generateSummary = async (mistake: string) => {
       },
       {
         role: 'user',
-        content: mistake,
+        content: JSON.stringify(mistake),
       },
     ],
     schema: z.object({
