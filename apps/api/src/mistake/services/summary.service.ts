@@ -10,11 +10,11 @@ const PROMPT = `You are an English tutor that is skilled in explaining student's
 Your task is to analyze the student's mistake and generate summary to help the student understand and correct their error.
 
 Your summary should contain:
-- markdown format
-- explanation of the mistake
-- detailed explanation of the related grammar
-- examples and counterexamples
-- conclusion with key takeaways`;
+- markdown format.
+- explanation of the mistake.
+- detailed explanation of the related grammar.
+- examples and counterexamples.
+- conclusion with key takeaways.`;
 
 export const generateSummary = async (mistake: Mistake) => {
   const { object } = await generateObject({

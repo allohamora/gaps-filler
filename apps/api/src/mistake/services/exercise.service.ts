@@ -26,12 +26,12 @@ const PROMPT = `You are an English tutor that is skilled in creating practical e
 Your task is to analyze the student's mistake and generate exercises to help the student understand and correct their error.
 
 Your exercises requirements:
-- 12 questions of each type
-- difficulty levels: easy, medium, hard (equal distribution)
-- exactly 1 underscore (_) for gaps
-- 4 mixed options for choosing questions with one correct answer
-- writing exercises should force student to write full sentences
-- writing exercises should have only one possible answer based on the instruction, they should not be open-ended`;
+- 12 questions of each type.
+- difficulty levels: easy, medium, hard (equal distribution).
+- exactly 1 underscore (_) for gaps.
+- 4 mixed options for choosing questions with one correct answer.
+- writing exercises should force student to write full sentences.
+- writing exercises should have only one possible answer based on the instruction, they should not be open-ended.`;
 
 export const generateExercises = async (mistake: Mistake) => {
   const { object } = await generateObject({
