@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
-import { LlmSession } from '../services/llm.service.js';
+import { ChatSession } from '../services/chat.service.js';
 import { TextChatMessage } from 'src/export.js';
 import { WSContext, WSEvents } from 'hono/ws';
 
 class TextChatSession {
   private logger = createLogger('text-chat-session');
 
-  private llm = new LlmSession();
+  private chat = new ChatSession();
 
   private ws?: WSContext<WebSocket>;
 
@@ -26,7 +26,7 @@ class TextChatSession {
   }
 
   private async handleInput({ id, data }: { id: string; data: string }) {
-    const { answer, mistakes } = await this.llm.send(data);
+    const { answer, mistakes } = await this.chat.send(data);
 
     if (mistakes?.length) {
       this.sendMessage({ type: 'mistakes', data: { id, mistakes } });

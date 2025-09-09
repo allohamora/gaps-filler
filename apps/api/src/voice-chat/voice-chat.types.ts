@@ -1,4 +1,4 @@
-import { Mistake } from '../services/llm.service.js';
+import { Mistake } from '../services/chat.service.js';
 import { Word } from './services/speech-to-text.service.js';
 
 export type { Word };

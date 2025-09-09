@@ -1,4 +1,4 @@
-import { Mistake } from '../services/llm.service.js';
+import { Mistake } from '../services/chat.service.js';
 
 export type TextChatMessage =
   | {

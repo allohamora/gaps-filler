@@ -1,5 +1,5 @@
 import { JSONFilePreset } from 'lowdb/node';
-import { Mistake } from '../services/llm.service.js';
+import { Mistake } from '../services/chat.service.js';
 import { Low } from 'lowdb';
 import { randomUUID } from 'node:crypto';
 import { Exercises } from './services/exercise.service.js';

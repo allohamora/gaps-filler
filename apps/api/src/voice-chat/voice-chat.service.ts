@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
 import { SpeechToTextSession } from './services/speech-to-text.service.js';
-import { LlmSession } from '../services/llm.service.js';
+import { ChatSession } from '../services/chat.service.js';
 import { StreamerSession } from './services/streamer.service.js';
 import { VoiceChatMessage } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
@@ -13,7 +13,7 @@ class VoiceChatSession {
 
   private stt = new SpeechToTextSession();
   private tts = new TextToSpeechSession();
-  private llm = new LlmSession();
+  private chat = new ChatSession();
   private streamer = new StreamerSession();
 
   private ws?: WSContext<WebSocket>;
@@ -39,7 +39,7 @@ class VoiceChatSession {
           .trim();
 
         await this.manager.withHandler(async (handler) => {
-          const { answer, mistakes } = await handler.ifContinue(async () => await this.llm.send(transcription));
+          const { answer, mistakes } = await handler.ifContinue(async () => await this.chat.send(transcription));
 
           if (mistakes?.length) {
             this.sendMessage({ type: 'mistakes', data: { id, mistakes } });

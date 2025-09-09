@@ -29,7 +29,7 @@ User: "I have visited Paris last year" -> incorrect: I have visited Paris last y
 User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs."
 User: "If I was you, I was a doctor" -> incorrect: If I was you, I was a doctor | correct: If I were you, I would be a doctor | topic: second conditional (was vs were) (was vs would be) | explanation: In hypothetical conditional sentences, "were" is used instead of "was" for all subjects, "would be" is used instead of "was" to express the consequence.`;
 
-export class LlmSession {
+export class ChatSession {
   private model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
 
   private messages: ModelMessage[] = [

@@ -1,4 +1,4 @@
-export { Mistake } from './services/llm.service.js';
+export { Mistake } from './services/chat.service.js';
 export { SavedMistake } from './mistake/mistake.repository.js';
 export { ChoosingExercise, WritingExercise, Difficulty } from './mistake/services/exercise.service.js';
 
