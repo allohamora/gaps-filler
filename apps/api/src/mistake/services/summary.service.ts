@@ -1,7 +1,7 @@
 import z from 'zod';
 import { generateObject } from 'ai';
-import { Mistake } from 'src/export.js';
 import { model } from 'src/libs/ai.lib.js';
+import { Mistake } from 'src/services/chat.service.js';
 
 const PROMPT = `You are an English tutor that is skilled in explaining student's mistakes and helping to fix them.
 Your task is to analyze the student's mistake and generate summary to help the student understand and correct their error.

@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
 import { ChatSession } from '../services/chat.service.js';
-import { TextChatMessage } from 'src/export.js';
 import { WSContext, WSEvents } from 'hono/ws';
+import { TextChatMessage } from './text-chat.types.js';
 
 class TextChatSession {
   private logger = createLogger('text-chat-session');

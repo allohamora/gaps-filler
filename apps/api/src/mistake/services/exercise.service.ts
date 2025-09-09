@@ -1,7 +1,7 @@
 import z from 'zod';
 import { generateObject } from 'ai';
 import { model } from 'src/libs/ai.lib.js';
-import { Mistake } from 'src/export.js';
+import { Mistake } from 'src/services/chat.service.js';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 

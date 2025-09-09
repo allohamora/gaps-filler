@@ -3,10 +3,10 @@ import { createLogger } from 'src/services/logger.service.js';
 import { SpeechToTextSession } from './services/speech-to-text.service.js';
 import { ChatSession } from '../services/chat.service.js';
 import { StreamerSession } from './services/streamer.service.js';
-import { VoiceChatMessage } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 import { TextToSpeechSession } from './services/text-to-speech.service.js';
+import { VoiceChatMessage } from './voice-chat.types.js';
 
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
