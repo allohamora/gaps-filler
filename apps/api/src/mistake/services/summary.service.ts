@@ -13,7 +13,7 @@ Summary requirements:
 - examples and counterexamples.
 - conclusion with key takeaways.`;
 
-export const generateSummary = async (mistake: Mistake) => {
+export const generateSummary = async ({ incorrect, correct, topic, explanation }: Mistake) => {
   const { object } = await generateObject({
     temperature: 0.8,
     model,
@@ -24,7 +24,7 @@ export const generateSummary = async (mistake: Mistake) => {
       },
       {
         role: 'user',
-        content: JSON.stringify(mistake),
+        content: JSON.stringify({ incorrect, correct, topic, explanation }),
       },
     ],
     schema: z.object({

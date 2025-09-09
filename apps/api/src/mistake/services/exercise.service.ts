@@ -48,7 +48,7 @@ User: "Whom is that?" -> task: "Write a question asking about the method for bak
 User: "If I was you, I was more careful." -> task: "Rewrite 'If I was you, I was more careful.' to the correct second conditional form.", answer: "If I were you, I would be more careful.", difficulty: hard
 User: "I do not like they." -> task: "Make a question from 'I do not like them'.", answer: "Who do you not like?", difficulty: hard`;
 
-export const generateExercises = async (mistake: Mistake) => {
+export const generateExercises = async ({ incorrect, correct, topic, explanation }: Mistake) => {
   const { object } = await generateObject({
     temperature: 0.9,
     model,
@@ -59,7 +59,7 @@ export const generateExercises = async (mistake: Mistake) => {
       },
       {
         role: 'user',
-        content: JSON.stringify(mistake),
+        content: JSON.stringify({ incorrect, correct, topic, explanation }),
       },
     ],
     schema: z.object({
