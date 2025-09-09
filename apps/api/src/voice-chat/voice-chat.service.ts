@@ -6,14 +6,13 @@ import { StreamerSession } from './services/streamer.service.js';
 import { VoiceChatMessage } from 'src/export.js';
 import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
-import { DeepgramTextToSpeechSession } from './text-to-speech/deepgram.text-to-speech.js';
-import { TextToSpeechStrategy } from './text-to-speech/text-to-speech.strategy.js';
+import { TextToSpeechSession } from './services/text-to-speech.service.js';
 
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
 
   private stt = new SpeechToTextSession();
-  private tts: TextToSpeechStrategy = new DeepgramTextToSpeechSession();
+  private tts = new TextToSpeechSession();
   private llm = new LlmSession();
   private streamer = new StreamerSession();
 
@@ -27,7 +26,6 @@ class VoiceChatSession {
 
   private async open(ws: WSContext<WebSocket>) {
     await this.stt.init();
-    await this.tts.init?.();
 
     this.ws = ws;
 
@@ -65,7 +63,6 @@ class VoiceChatSession {
 
   private async close() {
     await this.stt.close();
-    this.tts.close?.();
     this.streamer.stopSending();
 
     this.logger.info({ msg: 'closed' });
