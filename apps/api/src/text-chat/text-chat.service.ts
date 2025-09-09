@@ -3,7 +3,6 @@ import { createLogger } from 'src/services/logger.service.js';
 import { LlmSession } from '../services/llm.service.js';
 import { TextChatMessage } from 'src/export.js';
 import { WSContext, WSEvents } from 'hono/ws';
-import { mistakesRepository } from 'src/mistake/mistake.repository.js';
 
 class TextChatSession {
   private logger = createLogger('text-chat-session');
@@ -30,7 +29,6 @@ class TextChatSession {
     const { answer, mistakes } = await this.llm.send(data);
 
     if (mistakes?.length) {
-      await mistakesRepository.createMistakes(mistakes);
       this.sendMessage({ type: 'mistakes', data: { id, mistakes } });
     }
 

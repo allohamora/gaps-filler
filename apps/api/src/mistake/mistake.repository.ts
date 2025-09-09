@@ -24,6 +24,8 @@ class MistakesRepository {
 
     this.db.data.mistakes.push(...newMistakes);
     await this.db.write();
+
+    return newMistakes;
   }
 
   public async getMistakes() {

@@ -8,7 +8,6 @@ import { interruptManager } from './services/interrupt.service.js';
 import { WSContext, WSEvents } from 'hono/ws';
 import { DeepgramTextToSpeechSession } from './text-to-speech/deepgram.text-to-speech.js';
 import { TextToSpeechStrategy } from './text-to-speech/text-to-speech.strategy.js';
-import { mistakesRepository } from 'src/mistake/mistake.repository.js';
 
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
@@ -45,7 +44,6 @@ class VoiceChatSession {
           const { answer, mistakes } = await handler.ifContinue(async () => await this.llm.send(transcription));
 
           if (mistakes?.length) {
-            await mistakesRepository.createMistakes(mistakes);
             this.sendMessage({ type: 'mistakes', data: { id, mistakes } });
           }
 

@@ -1,8 +1,10 @@
 import { type FC, useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Save as SaveIcon, Check } from 'lucide-react';
 import type { TextChatMessage, Mistake } from '@gaps-filler/api';
 import { useWebSocket } from '@/hooks/use-web-socket';
 import { api } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface BaseMessage {
   id: string;
@@ -13,6 +15,7 @@ interface UserMessage extends BaseMessage {
   author: 'user';
   content: string;
   mistakes?: Mistake[];
+  savedMistakes?: number[]; // indexes of mistakes saved individually
 }
 interface AIMessage extends BaseMessage {
   author: 'ai';
@@ -155,23 +158,78 @@ export const TextChatPage: FC = () => {
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
                   {message.author === 'user' && message.mistakes && message.mistakes.length > 0 && (
                     <div className="mt-2 space-y-2">
-                      {message.mistakes.map((m, idx) => (
-                        <div
-                          key={`${message.id}-mistake-${idx}`}
-                          className="rounded-md border border-rose-400/60 bg-rose-50/80 px-2 py-1 text-[11px] shadow-sm md:text-xs dark:border-rose-400/30 dark:bg-rose-500/10"
-                        >
-                          <div className="font-semibold text-rose-700 dark:text-rose-300">
-                            {m.topic || 'Correction'}
+                      {message.mistakes.map((m, idx) => {
+                        const isSaved = message.savedMistakes?.includes(idx);
+                        return (
+                          <div
+                            key={`${message.id}-mistake-${idx}`}
+                            className="rounded-md border border-rose-400/60 bg-rose-50/80 p-2 text-[11px] shadow-sm md:text-xs dark:border-rose-400/30 dark:bg-rose-500/10"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="font-semibold text-rose-700 dark:text-rose-300">
+                                  {m.topic || 'Correction'}
+                                </div>
+                                <div className="mt-0.5">
+                                  <span className="line-through decoration-rose-500/70">{m.incorrect}</span>{' '}
+                                  <span className="font-medium">→ {m.correct}</span>
+                                </div>
+                                {m.explanation && (
+                                  <div className="text-muted-foreground mt-0.5 opacity-80">{m.explanation}</div>
+                                )}
+                              </div>
+                              <div className="flex items-center pl-2 pt-0.5">
+                                {isSaved ? (
+                                  <Button
+                                    asChild
+                                    className="size-6 opacity-100"
+                                    aria-label="Saved"
+                                    title="Saved"
+                                    variant="outline"
+                                  >
+                                    <span>
+                                      <Check className="size-3" />
+                                    </span>
+                                  </Button>
+                                ) : (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const res = await api.v1.mistakes.$post({
+                                          json: { mistakes: [m] as Mistake[] },
+                                        });
+                                        if (res.ok) {
+                                          toast.success('Saved');
+                                          setMessages((prev) =>
+                                            prev.map((msg) =>
+                                              msg.id === message.id && msg.author === 'user'
+                                                ? {
+                                                    ...msg,
+                                                    savedMistakes: [...(msg.savedMistakes || []), idx],
+                                                  }
+                                                : msg,
+                                            ),
+                                          );
+                                        } else {
+                                          toast.error('Failed');
+                                        }
+                                      } catch {
+                                        toast.error('Error');
+                                      }
+                                    }}
+                                    disabled={isSaved}
+                                    aria-label="Save mistake"
+                                    title="Save mistake"
+                                    className="focus-visible:ring-ring border-primary/50 bg-background/70 text-primary hover:bg-primary/10 inline-flex size-6 items-center justify-center rounded border backdrop-blur-sm transition focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-60"
+                                  >
+                                    <SaveIcon className="size-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="mt-0.5">
-                            <span className="line-through decoration-rose-500/70">{m.incorrect}</span>{' '}
-                            <span className="font-medium">→ {m.correct}</span>
-                          </div>
-                          {m.explanation && (
-                            <div className="text-muted-foreground mt-0.5 opacity-80">{m.explanation}</div>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
