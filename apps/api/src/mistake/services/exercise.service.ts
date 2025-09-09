@@ -30,7 +30,8 @@ Exercise requirements:
 - 20% of choosing exercises should be about related topics to help user see the difference.
 - natural plain text only: no lists, bullets, emojis, asterisks, quotes for emphasis, or stage directions.
 - writing exercises should force student to write full sentences.
-- writing exercises should have only one possible answer based on the instruction, they should not be open-ended with multiple correct answers.
+- writing exercises can use types like: complete the sentence, write a sentence with the provided words, transform the sentence, correct the mistake in the sentence, make a question from the provided words, and similar.
+- writing exercises should have only one possible answer that can be created from words of the task, they should not be open-ended with multiple correct answers.
 
 Related choosing exercise examples (illustrative only - do not echo):
 User: "Home is it?" -> question: "The girl _ I saw at the party is my friend’s ex-girlfriend", options: [{ value: "who", isCorrect: false }, { value: "whom", isCorrect: true }, { value: "what", isCorrect: false }, { value: "home", isCorrect: false }], difficulty: easy
@@ -40,19 +41,16 @@ User: "I was living here since 3 years." -> question: "I _ a shower when the pho
 Writing exercise examples (illustrative only - do not echo):
 User: "Home are you?" -> task: "Complete the sentence using the correct word to ask about someone's current well-being: '_ are you?'", answer: "How are you?", difficulty: easy
 User: "He don't like me, she don't like as well." -> task: "Complete the sentence using the correct form of the verb: 'He _ like me, she _ like as well.'", answer: "He doesn't like me, she doesn't like as well.", difficulty: easy
-User: "She go to school every day." -> task: "Form a question asking about someone's daily routine using the present simple tense: '_ she go to school every day?'", answer: "Does she go to school every day?", difficulty: easy
 
 User: "I have visited Paris last year." -> task: "Write the sentence by using words: [last year, Paris, visit, I] in the correct form", answer: "I visited Paris last year.", difficulty: medium
-User: "I am living here since 2019." -> task: "Rewrite 'I am living here since 2019' using the correct tense for an action that started in the past and continues to now: 'I _ here since 2019.'", answer: "I have lived here since 2019.", difficulty: medium
 User: "Whom is that?" -> task: "Write a question asking about the method for baking a perfect cake. Start with 'Could you tell me ...?", answer: "Could you tell me how to bake a perfect cake?", difficulty: medium
 
-User: "If I was you, I was more careful." -> task: "Rewrite 'If I was you, I was more careful.' using the second conditional", answer: "If I were you, I would be more careful.", difficulty: hard
-User: "She suggested me to take rest." -> task: "Fill the gaps with [suggest, take] in correct forms: 'She _ that I _ a rest.'", answer: "She suggested that I take a rest.", difficulty: hard
-User: "What would you do if you would had studied harder?" -> task: "Rewrite "What would you have done if you had studied harder?" to the correct second conditional form.", answer: "What would you do if you studied harder?", difficulty: hard`;
+User: "If I was you, I was more careful." -> task: "Rewrite 'If I was you, I was more careful.' to the correct second conditional form.", answer: "If I were you, I would be more careful.", difficulty: hard
+User: "I do not like they." -> task: "Make a question from 'I do not like them'.", answer: "Who do you not like?", difficulty: hard`;
 
 export const generateExercises = async (mistake: Mistake) => {
   const { object } = await generateObject({
-    temperature: 1,
+    temperature: 0.9,
     model,
     messages: [
       {
