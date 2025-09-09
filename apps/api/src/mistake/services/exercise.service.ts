@@ -25,12 +25,13 @@ const model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-f
 const PROMPT = `You are an English tutor that is skilled in creating practical exercises to fix students' mistakes.
 Your task is to analyze the student's mistake and generate exercises to help the student understand and correct their error.
 
-Your exercises requirements:
+Exercise requirements:
 - 12 questions of each type.
 - difficulty levels: easy, medium, hard (equal distribution).
 - exactly 1 underscore (_) for gaps.
 - 4 options for choosing questions with one correct answer.
 - 20% of choosing exercises should be about related topics to help user see the difference.
+- natural plain text only: no lists, bullets, emojis, asterisks, quotes for emphasis, or stage directions.
 - writing exercises should force student to write full sentences.
 - writing exercises should have only one possible answer based on the instruction, they should not be open-ended with multiple correct answers.
 
