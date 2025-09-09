@@ -28,7 +28,7 @@ function MistakeDetailPage() {
   const analyze = async () => {
     setIsAnalyzing(true);
 
-    await api.v1.mistakes[':id'].analyze.$post({ param: { id } });
+    await api.v1.mistakes[':id'].task.$post({ param: { id } });
     await router.invalidate();
 
     setIsAnalyzing(false);
@@ -54,10 +54,10 @@ function MistakeDetailPage() {
               Explanation: {data.explanation || 'No explanation available.'}
             </div>
           </header>
-          {data.summary && (
+          {data.task?.summary && (
             <article
               className="prose prose-sm dark:prose-invert markdown-body [&.markdown-body]:bg-inherit! max-w-none"
-              dangerouslySetInnerHTML={{ __html: parse(data.summary) }}
+              dangerouslySetInnerHTML={{ __html: parse(data.task.summary) }}
             />
           )}
           <div className="flex justify-between">
@@ -65,7 +65,7 @@ function MistakeDetailPage() {
               {isAnalyzing ? 'Analyzing...' : 'Analyze'}
             </Button>
 
-            {data.exercises && (
+            {data.task?.exercises && (
               <Button variant="secondary" disabled={isAnalyzing} asChild>
                 <Link to="/mistakes/$id/practice" disabled={isAnalyzing} params={{ id }}>
                   Practice

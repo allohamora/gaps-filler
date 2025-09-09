@@ -6,8 +6,10 @@ import { Exercises } from './services/exercise.service.js';
 
 export type SavedMistake = Mistake & {
   id: string;
-  summary?: string;
-  exercises?: Exercises;
+  task?: {
+    summary: string;
+    exercises: Exercises;
+  };
 };
 
 type Data = { mistakes: SavedMistake[] };
@@ -19,13 +21,13 @@ class MistakesRepository {
     this.db = await JSONFilePreset('db.json', { mistakes: [] } as Data);
   }
 
-  public async createMistakes(mistakes: Mistake[]) {
-    const newMistakes = mistakes.map((m) => ({ ...m, id: randomUUID() }));
+  public async createMistake(mistake: Mistake) {
+    const newMistake = { ...mistake, id: randomUUID() };
 
-    this.db.data.mistakes.push(...newMistakes);
+    this.db.data.mistakes.push(newMistake);
     await this.db.write();
 
-    return newMistakes;
+    return newMistake;
   }
 
   public async getMistakes() {

@@ -1,7 +1,7 @@
 import z from 'zod';
 import { Hono } from 'hono';
 import { mistakesRepository } from './mistake.repository.js';
-import { analyzeMistake } from './mistake.service.js';
+import { createTask } from './mistake.service.js';
 import { zValidator } from '@hono/zod-validator';
 
 export const mistakesRouter = new Hono()
@@ -15,22 +15,18 @@ export const mistakesRouter = new Hono()
     zValidator(
       'json',
       z.object({
-        mistakes: z.array(
-          z.object({
-            incorrect: z.string(),
-            correct: z.string(),
-            topic: z.string(),
-            explanation: z.string(),
-          }),
-        ),
+        mistake: z.object({
+          incorrect: z.string(),
+          correct: z.string(),
+          topic: z.string(),
+          explanation: z.string(),
+        }),
       }),
     ),
     async (c) => {
-      const { mistakes } = c.req.valid('json');
-      // Create mistakes once and return them
-      const created = await mistakesRepository.createMistakes(mistakes);
+      const { mistake } = c.req.valid('json');
 
-      return c.json(created, 201);
+      return c.json(await mistakesRepository.createMistake(mistake), 201);
     },
   )
   .get('/:id', async (c) => {
@@ -38,8 +34,8 @@ export const mistakesRouter = new Hono()
 
     return c.json(mistakesRepository.getMistakeById(id));
   })
-  .post('/:id/analyze', async (c) => {
+  .post('/:id/task', async (c) => {
     const id = c.req.param('id');
 
-    return c.json(await analyzeMistake(id));
+    return c.json(await createTask(id), 201);
   });

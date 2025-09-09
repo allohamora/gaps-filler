@@ -261,7 +261,7 @@ export const VoiceChatPage: FC = () => {
                                           onClick={async () => {
                                             try {
                                               const res = await api.v1.mistakes.$post({
-                                                json: { mistakes: [m] as Mistake[] },
+                                                json: { mistake: m },
                                               });
                                               if (res.ok) {
                                                 toast.success('Saved');

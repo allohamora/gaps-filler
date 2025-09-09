@@ -9,11 +9,11 @@ export const Route = createFileRoute('/mistakes/$id/practice')({
     const res = await api.v1.mistakes[':id'].$get({ param: { id } });
 
     const data = await res.json();
-    if (!data.exercises) {
+    if (!data.task?.exercises) {
       throw new Error('No exercises available for this mistake.');
     }
 
-    return data.exercises;
+    return data.task.exercises;
   },
   component: PracticePage,
 });
