@@ -28,21 +28,24 @@ User: "I have visited Paris last year" -> incorrect: I have visited Paris last y
 User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs."
 User: "If I was you, I was a doctor" -> incorrect: If I was you, I was a doctor | correct: If I were you, I would be a doctor | topic: second conditional (was vs were) (was vs would be) | explanation: In hypothetical conditional sentences, "were" is used instead of "was" for all subjects, "would be" is used instead of "was" to express the consequence.`;
 
+// half from ai, half from user
+const MESSAGES_LIMIT = 10;
+
 export class ChatSession {
-  private messages: ModelMessage[] = [
-    {
-      role: 'system',
-      content: PROMPT,
-    },
-  ];
+  private systemMessage: ModelMessage = {
+    role: 'system',
+    content: PROMPT,
+  };
+
+  private history: ModelMessage[] = [];
 
   public async send(message: string) {
-    this.messages.push({ role: 'user', content: message });
+    this.history.push({ role: 'user', content: message });
 
     const { object } = await generateObject({
       temperature: 0.8,
       model,
-      messages: this.messages,
+      messages: [this.systemMessage, ...this.history.slice(-MESSAGES_LIMIT)],
       schema: z.object({
         answer: z.string(),
         mistakes: z
@@ -58,7 +61,7 @@ export class ChatSession {
       }),
     });
 
-    this.messages.push({ role: 'assistant', content: JSON.stringify(object) });
+    this.history.push({ role: 'assistant', content: JSON.stringify(object) });
 
     return object;
   }
