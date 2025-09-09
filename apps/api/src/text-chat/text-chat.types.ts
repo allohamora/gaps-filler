@@ -2,29 +2,23 @@ import { Mistake } from '../services/chat.service.js';
 
 export type TextChatMessage =
   | {
-      type: 'input';
+      type: 'user';
       data: {
         id: string;
-        data: string; // full message
+        message: string; // full message
       };
     }
   | {
-      type: 'answer';
+      type: 'assistant';
       data: {
         id: string;
-        chunk: string; // chunk of the message
+        message: string; // full message
       };
     }
   | {
       type: 'mistakes';
       data: {
-        id: string;
+        id: string; // id of the user message
         mistakes: Mistake[];
       };
-    }
-  | {
-      type: 'finish';
-    }
-  | {
-      type: 'result';
     };

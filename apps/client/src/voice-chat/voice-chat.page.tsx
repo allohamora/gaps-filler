@@ -41,16 +41,6 @@ export const VoiceChatPage: FC = () => {
     onMessage: (event) => {
       if (event.type === 'transcription') {
         setMessages((prev) => {
-          const message = prev.find((m) => m.id === event.data.id);
-
-          if (message) {
-            return prev.map((m) =>
-              m.id === event.data.id && m.author === 'user'
-                ? { ...m, content: [...m.content, ...event.data.chunk] }
-                : m,
-            );
-          }
-
           return [...prev, { id: event.data.id, content: event.data.chunk, author: 'user' }];
         });
       }
@@ -63,27 +53,14 @@ export const VoiceChatPage: FC = () => {
         );
       }
 
-      if (event.type === 'answer') {
+      if (event.type === 'assistant') {
         setMessages((prev) => {
-          const message = prev.find((m) => m.id === event.data.id);
-          const content = event.data.chunk;
-
-          if (message) {
-            return prev.map((m) =>
-              m.id === event.data.id && m.author === 'ai' ? { ...m, content: `${m.content} ${content}` } : m,
-            );
-          }
-
-          return [...prev, { id: event.data.id, content, author: 'ai' }];
+          return [...prev, { id: event.data.id, content: event.data.message, author: 'ai' }];
         });
       }
 
       if (event.type === 'audio') {
         enqueue(event.data);
-      }
-
-      if (event.type === 'result') {
-        close();
       }
     },
     onClose: async () => {
@@ -110,7 +87,6 @@ export const VoiceChatPage: FC = () => {
     await stopPlaying();
     await stopListening();
     setIsStarted(false);
-    send({ type: 'finish' });
     close();
   }
 

@@ -45,20 +45,10 @@ export const TextChatPage: FC = () => {
         );
       }
 
-      if (event.type === 'answer') {
+      if (event.type === 'assistant') {
         setMessages((prev) => {
-          const exists = prev.find((m) => m.id === event.data.id && m.author === 'ai');
-          if (exists) {
-            return prev.map((m) =>
-              m.id === event.data.id && m.author === 'ai' ? { ...m, content: m.content + event.data.chunk } : m,
-            );
-          }
-          return [...prev, { id: event.data.id, author: 'ai', content: event.data.chunk, createdAt: Date.now() }];
+          return [...prev, { id: event.data.id, author: 'ai', content: event.data.message, createdAt: Date.now() }];
         });
-      }
-
-      if (event.type === 'result') {
-        close();
       }
     },
     onClose: () => {
@@ -74,7 +64,6 @@ export const TextChatPage: FC = () => {
   };
 
   function stop() {
-    send({ type: 'finish' });
     close();
     setIsStarted(false);
   }
@@ -87,7 +76,7 @@ export const TextChatPage: FC = () => {
 
     // optimistic append user message
     setMessages((prev) => [...prev, { id, author: 'user', content, createdAt: Date.now() }]);
-    send({ type: 'input', data: { id, data: content } });
+    send({ type: 'user', data: { id, message: content } });
     setInput('');
   };
 

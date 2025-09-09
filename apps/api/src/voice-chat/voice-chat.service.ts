@@ -45,7 +45,7 @@ class VoiceChatSession {
             this.sendMessage({ type: 'mistakes', data: { id, mistakes } });
           }
 
-          this.sendMessage({ type: 'answer', data: { id: randomUUID(), chunk: answer } });
+          this.sendMessage({ type: 'assistant', data: { id: randomUUID(), message: answer } });
 
           await handler.ifContinue(async () => await this.streamer.streamVoice(this.tts.voice(answer)));
         });
@@ -73,10 +73,6 @@ class VoiceChatSession {
 
     if (message.type === 'audio') {
       this.stt.transcript(Buffer.from(message.data, 'base64'));
-    }
-
-    if (message.type === 'finish') {
-      this.sendMessage({ type: 'result' });
     }
   }
 

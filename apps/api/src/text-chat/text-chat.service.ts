@@ -25,25 +25,21 @@ class TextChatSession {
     this.logger.info({ msg: 'closed' });
   }
 
-  private async handleInput({ id, data }: { id: string; data: string }) {
-    const { answer, mistakes } = await this.chat.send(data);
+  private async handleInput({ id, message }: { id: string; message: string }) {
+    const { answer, mistakes } = await this.chat.send(message);
 
     if (mistakes?.length) {
       this.sendMessage({ type: 'mistakes', data: { id, mistakes } });
     }
 
-    this.sendMessage({ type: 'answer', data: { id: randomUUID(), chunk: answer } });
+    this.sendMessage({ type: 'assistant', data: { id: randomUUID(), message: answer } });
   }
 
   private async handleMessage(event: MessageEvent) {
     const message: TextChatMessage = JSON.parse(event.data.toString());
 
-    if (message.type === 'input') {
+    if (message.type === 'user') {
       await this.handleInput(message.data);
-    }
-
-    if (message.type === 'finish') {
-      this.sendMessage({ type: 'result' });
     }
   }
 

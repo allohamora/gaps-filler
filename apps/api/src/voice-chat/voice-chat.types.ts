@@ -14,24 +14,18 @@ export type VoiceChatMessage =
   | {
       type: 'mistakes';
       data: {
-        id: string;
+        id: string; // id of the user message
         mistakes: Mistake[];
       };
     }
   | {
-      type: 'answer';
+      type: 'assistant';
       data: {
         id: string;
-        chunk: string; // chunk of the message
+        message: string; // full message
       };
     }
   | {
       type: 'audio';
       data: string; // base64 encoded audio data
-    }
-  | {
-      type: 'finish';
-    }
-  | {
-      type: 'result';
     };
