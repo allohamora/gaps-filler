@@ -1,7 +1,6 @@
 import z from 'zod';
 import { generateObject } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { GEMINI_API_KEY } from 'src/config.js';
+import { model } from 'src/libs/ai.lib.js';
 import { Mistake } from 'src/export.js';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -19,8 +18,6 @@ export type WritingExercise = {
 };
 
 export type Exercises = { choosing: ChoosingExercise[]; writing: WritingExercise[] };
-
-const model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
 
 const PROMPT = `You are an English tutor that is skilled in creating practical exercises to fix students' mistakes.
 Your task is to analyze the student's mistake and generate exercises to help the student understand and correct their error.

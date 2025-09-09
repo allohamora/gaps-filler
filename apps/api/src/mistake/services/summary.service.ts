@@ -1,10 +1,7 @@
 import z from 'zod';
 import { generateObject } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { GEMINI_API_KEY } from 'src/config.js';
 import { Mistake } from 'src/export.js';
-
-const model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
+import { model } from 'src/libs/ai.lib.js';
 
 const PROMPT = `You are an English tutor that is skilled in explaining student's mistakes and helping to fix them.
 Your task is to analyze the student's mistake and generate summary to help the student understand and correct their error.

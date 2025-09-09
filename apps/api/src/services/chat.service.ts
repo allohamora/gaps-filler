@@ -1,7 +1,6 @@
 import z from 'zod';
 import { generateObject, ModelMessage } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { GEMINI_API_KEY } from 'src/config.js';
+import { model } from 'src/libs/ai.lib.js';
 
 export type Mistake = {
   incorrect: string;
@@ -30,8 +29,6 @@ User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them
 User: "If I was you, I was a doctor" -> incorrect: If I was you, I was a doctor | correct: If I were you, I would be a doctor | topic: second conditional (was vs were) (was vs would be) | explanation: In hypothetical conditional sentences, "were" is used instead of "was" for all subjects, "would be" is used instead of "was" to express the consequence.`;
 
 export class ChatSession {
-  private model = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY })('gemini-2.5-flash');
-
   private messages: ModelMessage[] = [
     {
       role: 'system',
@@ -44,7 +41,7 @@ export class ChatSession {
 
     const { object } = await generateObject({
       temperature: 0.8,
-      model: this.model,
+      model,
       messages: this.messages,
       schema: z.object({
         answer: z.string(),
