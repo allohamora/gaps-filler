@@ -8,7 +8,7 @@ export const Root: FC = () => {
   return (
     <ThemeProvider defaultTheme="dark">
       <nav className="bg-background sticky top-0 z-40 border-b">
-        <div className="flex justify-around px-6 py-4 text-sm font-medium md:justify-start md:space-x-6">
+        <div className="flex justify-between px-6 py-4 text-sm font-medium md:justify-start md:space-x-6">
           <Link
             to="/"
             activeProps={{ className: 'text-primary font-semibold' }}
@@ -40,7 +40,7 @@ export const Root: FC = () => {
         </div>
       </nav>
 
-      <main>
+      <main className="flex flex-1">
         <Outlet />
       </main>
 

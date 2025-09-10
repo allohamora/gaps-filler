@@ -17,20 +17,14 @@ export const useWebSocket = <T>({ onMessage, onOpen, onClose, onError, getClient
       return;
     }
 
-    webSocketRef.current.addEventListener(
-      'close',
-      () => {
-        if (controllerRef.current) {
-          controllerRef.current.abort();
-          controllerRef.current = null;
-        }
-
-        webSocketRef.current = null;
-      },
-      { once: true, signal: controllerRef.current?.signal },
-    );
-
     webSocketRef.current.close();
+
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+      controllerRef.current = null;
+    }
+
+    webSocketRef.current = null;
   };
 
   const open = () => {
