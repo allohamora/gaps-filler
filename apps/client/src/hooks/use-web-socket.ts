@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 type UseWebSocketOptions<T> = {
   onMessage?: (message: T) => void;
@@ -17,14 +17,20 @@ export const useWebSocket = <T>({ onMessage, onOpen, onClose, onError, getClient
       return;
     }
 
+    webSocketRef.current.addEventListener(
+      'close',
+      () => {
+        if (controllerRef.current) {
+          controllerRef.current.abort();
+          controllerRef.current = null;
+        }
+
+        webSocketRef.current = null;
+      },
+      { once: true, signal: controllerRef.current?.signal },
+    );
+
     webSocketRef.current.close();
-
-    if (controllerRef.current) {
-      controllerRef.current.abort();
-      controllerRef.current = null;
-    }
-
-    webSocketRef.current = null;
   };
 
   const open = () => {
@@ -76,6 +82,10 @@ export const useWebSocket = <T>({ onMessage, onOpen, onClose, onError, getClient
       console.warn(`Cannot send message, WebSocket is not open (state: ${webSocketRef.current.readyState})`);
     }
   };
+
+  useEffect(() => {
+    return () => close();
+  }, []);
 
   return {
     open,
