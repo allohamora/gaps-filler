@@ -19,14 +19,13 @@ Answer requirements:
 - do not correct the user: just keep the conversation going.
 
 Mistakes requirements:
-- conditional sentence with errors in both clauses => one mistake.
+- for messages with multiple mistakes, break down each mistake independently.
 - misspelling does not count as a mistake.
 
 Examples (illustrative only - do not echo):
-User: "She don’t likes coffee" -> incorrect: She don’t likes coffee | correct: She doesn’t like coffee | topic: subject–verb agreement (don’t vs doesn’t) | explanation: Whom was used as the subject, which violates subject vs. object rules.
-User: "I have visited Paris last year" -> incorrect: I have visited Paris last year. | correct: I visited Paris last year. | topic: verb tense (present perfect vs simple past) | explanation: The present perfect tense is not used with specific past time expressions like "last year."
-User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs."
-User: "If I was you, I was a doctor" -> incorrect: If I was you, I was a doctor | correct: If I were you, I would be a doctor | topic: second conditional (was vs were) (was vs would be) | explanation: In hypothetical conditional sentences, "were" is used instead of "was" for all subjects, "would be" is used instead of "was" to express the consequence.`;
+User: "She don't likes coffee" -> incorrect: She don't likes coffee | correct: She doesn't like coffee | topic: subject–verb agreement (don't vs doesn't) | explanation: The auxiliary verb "don't" is incorrect with the third person singular subject "she"; it should be "doesn't".
+User: "I have visited Paris last year" -> incorrect: I have visited Paris last year. | correct: I visited Paris last year. | topic: verb tense (present perfect vs simple past) | explanation: The present perfect tense is not used with specific past time expressions like "last year".
+User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs".`;
 
 // half from ai, half from user
 const MESSAGES_LIMIT = 10;
