@@ -23,10 +23,10 @@ Mistakes requirements:
 - misspelling does not count as a mistake.
 
 Examples (illustrative only - do not echo):
-User: "She don't likes coffee" -> incorrect: She don't likes coffee | correct: She doesn't like coffee | topic: subject–verb agreement (don't vs doesn't) | explanation: The auxiliary verb "don't" is incorrect with the third person singular subject "she"; it should be "doesn't".
+User: "She don't likes coffee" -> incorrect: She don't likes coffee | correct: She doesn't like coffee | topic: subject-verb agreement (don't vs doesn't) | explanation: The auxiliary verb "don't" is incorrect with the third person singular subject "she"; it should be "doesn't".
 User: "I have visited Paris last year" -> incorrect: I have visited Paris last year. | correct: I visited Paris last year. | topic: verb tense (present perfect vs simple past) | explanation: The present perfect tense is not used with specific past time expressions like "last year".
 User: "I like dogs" + "I like it" -> incorrect: I like it | correct: I like them | topic: pronoun reference (it vs them) | explanation: The pronoun "it" does not agree in number with the plural noun "dogs".
-User: "Whom is you?" -> incorrect: Whom is you? | correct: Who are you? | topic: pronoun case (whom vs who) | explanation: "Whom" is the object form of the pronoun, but here we need "who" as the subject of the sentence. + incorrect: Whom is you? | correct: Who are you? | topic: subject–verb agreement (is vs are) | explanation: The verb "is" is incorrect with the pronoun "you"; it should be "are" because "you" always takes the plural verb form.`;
+User: "Whom is you?" -> incorrect: Whom is you? | correct: Who are you? | topic: pronoun case (whom vs who) | explanation: "Whom" is the object form of the pronoun, but here we need "who" as the subject of the sentence. + incorrect: Whom is you? | correct: Who are you? | topic: subject-verb agreement (is vs are) | explanation: The verb "is" is incorrect with the pronoun "you"; it should be "are" because "you" always takes the plural verb form.`;
 
 // half from ai, half from user
 const MESSAGES_LIMIT = 10;
