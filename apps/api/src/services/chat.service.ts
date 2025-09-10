@@ -53,7 +53,7 @@ export class ChatSession {
             z.object({
               incorrect: z.string(),
               correct: z.string(),
-              topic: z.string(),
+              topic: z.string().max(35),
               explanation: z.string(),
             }),
           )
