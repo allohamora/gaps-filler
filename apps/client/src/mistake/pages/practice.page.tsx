@@ -1,8 +1,10 @@
+import { useMemo, useState, type FC } from 'react';
+import type { ChoosingExercise, WritingExercise } from '@gaps-filler/api';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { useRef, useState, type FC } from 'react';
 import { cn } from '@/lib/utils';
-import type { ChoosingExercise, WritingExercise } from '@gaps-filler/api';
+
+type Exercise = { type: 'choosing'; data: ChoosingExercise } | { type: 'writing'; data: WritingExercise };
 
 type Props = {
   id: string;
@@ -10,275 +12,387 @@ type Props = {
   writing: WritingExercise[];
 };
 
+const normalize = (str: string) =>
+  str
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[.!?]$/, '')
+    .toLowerCase();
+
 export const PracticePage: FC<Props> = ({ id, choosing, writing }) => {
-  const [stage, setStage] = useState<'choosing' | 'writing' | 'results'>('choosing');
-  const [currentChoosing, setCurrentChoosing] = useState(0);
-  const [currentWriting, setCurrentWriting] = useState(0);
-  const [answersChoosing, setAnswersChoosing] = useState<Record<number, number>>({});
-  const [answersWriting, setAnswersWriting] = useState<Record<number, { value: string; isCorrect: boolean }>>({});
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const exercises = useMemo(() => {
+    const combined: Exercise[] = [];
 
-  // Choosing helpers
-  const choosingQuestion = choosing[currentChoosing];
-  const choosingAnswered = answersChoosing[currentChoosing] !== undefined;
-  const choosingSelectedIdx = answersChoosing[currentChoosing];
-  const choosingIsCorrect = choosingAnswered && choosingQuestion?.options[choosingSelectedIdx!].isCorrect;
+    for (const item of choosing) {
+      const data = { ...item };
+      data.options = data.options.toSorted(() => Math.random() - 0.5);
 
-  const handleSelectChoosing = (idx: number) => {
-    if (choosingAnswered) return; // lock answer
-    setAnswersChoosing((prev) => ({ ...prev, [currentChoosing]: idx }));
+      combined.push({ type: 'choosing', data });
+    }
+
+    for (const data of writing) {
+      combined.push({ type: 'writing', data });
+    }
+
+    return combined;
+  }, [choosing, writing]);
+
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, { correct: boolean; value?: string; skipped?: boolean }>>({});
+  const [input, setInput] = useState('');
+  const [revealed, setRevealed] = useState(false);
+
+  const total = exercises.length;
+  const current = exercises[index];
+
+  const percent = (index / total) * 100;
+  const isLast = index === total - 1;
+  const completed = Object.keys(answers).length === total;
+  const correctCount = Object.values(answers).filter((answer) => answer.correct).length;
+  const skippedCount = Object.values(answers).filter((answer) => answer.skipped).length;
+
+  const goNext = () => {
+    if (isLast) {
+      return;
+    }
+
+    setIndex((idx) => idx + 1);
+    setInput('');
+    setRevealed(false);
   };
 
-  const nextChoosing = () => {
-    if (currentChoosing + 1 < choosing.length) setCurrentChoosing((i) => i + 1);
-    else setStage('writing');
+  const selectOption = (value: string, isCorrect: boolean) => {
+    if (answers[index]) return;
+
+    setAnswers((prevAnswers) => ({ ...prevAnswers, [index]: { correct: isCorrect, value } }));
   };
 
-  // Writing helpers
-  const writingExercise = writing[currentWriting];
-  const writingAnswered = answersWriting[currentWriting] !== undefined;
-  const writingUserValue = answersWriting[currentWriting]?.value ?? '';
-  const writingIsCorrect = answersWriting[currentWriting]?.isCorrect;
+  const checkWriting = () => {
+    if (answers[index] || current.type !== 'writing') return;
 
-  const checkWriting = (value: string) => {
-    if (writingAnswered) return;
-    const normalize = (s: string) => s.trim().replace(/\s+/g, ' ').replace(/\.$/, '').toLowerCase();
-    const isCorrect = normalize(value) === normalize(writingExercise.answer);
+    const expected = normalize(current.data.answer);
+    const actual = normalize(input);
 
-    setAnswersWriting((prev) => ({ ...prev, [currentWriting]: { value, isCorrect } }));
+    const isCorrect = expected === actual;
+    setAnswers((prevAnswers) => ({ ...prevAnswers, [index]: { correct: isCorrect, value: input } }));
   };
 
-  const nextWriting = () => {
-    if (currentWriting + 1 < writing.length) {
-      setCurrentWriting((i) => i + 1);
+  const reveal = () => setRevealed(true);
 
-      if (ref?.current?.value) {
-        ref.current.value = '';
-      }
-    } else setStage('results');
+  const skipCurrent = () => {
+    if (answers[index]) return;
+    setAnswers((prevAnswers) => ({ ...prevAnswers, [index]: { correct: false, skipped: true } }));
+
+    if (!isLast) {
+      goNext();
+    }
   };
 
   const retry = () => {
-    setStage('choosing');
-    setCurrentChoosing(0);
-    setCurrentWriting(0);
-    setAnswersChoosing({});
-    setAnswersWriting({});
+    setIndex(0);
+    setAnswers({});
+    setInput('');
+    setRevealed(false);
   };
 
-  const choosingScore = Object.entries(answersChoosing).filter(
-    ([key, value]) => choosing[Number(key)]?.options[Number(value)].isCorrect,
-  ).length;
-  const writingScore = Object.values(answersWriting).filter((a) => a.isCorrect).length;
-  const totalScore = choosingScore + writingScore;
-  const totalQuestions = choosing.length + writing.length;
-
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col gap-6 px-4 pb-10 pt-6">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-12 pt-6">
       <div className="flex items-center gap-2">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
+        <Button asChild variant="ghost" size="sm" className="-ml-2" aria-label="Back to mistake">
           <Link to="/mistakes/$id" params={{ id }}>
             ← Back
           </Link>
         </Button>
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/mistakes/$id" params={{ id }}>
-            Article
-          </Link>
-        </Button>
+        <div className="text-muted-foreground text-xs">Practice</div>
       </div>
 
-      {stage === 'results' ? (
-        <div className="flex flex-col gap-4">
-          <h1 className="text-xl font-semibold">Results</h1>
-          <div className="rounded-lg border p-6 text-sm">
-            <p className="mb-2 font-medium">
-              Score: {totalScore} / {totalQuestions} ({choosingScore} MCQ • {writingScore} Writing)
-            </p>
-            <p className="text-muted-foreground mb-4 text-xs">
-              Review your answers. Correct options/answers are highlighted.
-            </p>
-            <h2 className="mb-2 text-sm font-semibold">Choosing</h2>
-            <ul className="mb-6 space-y-4">
-              {choosing.map((item, idx) => {
-                const picked = answersChoosing[idx];
-                return (
-                  <li key={idx} className="rounded-md border p-3">
-                    <div className="mb-2 text-sm font-medium">{item.question}</div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {item.options.map((o, oi) => {
-                        const isPicked = picked === oi;
-                        return (
-                          <span
-                            key={oi}
-                            className={cn('rounded-md border px-2 py-1', {
-                              'border-green-400 bg-green-100 dark:bg-green-500/10': o.isCorrect,
-                              'border-rose-400 bg-rose-100 dark:bg-rose-500/10': !o.isCorrect && isPicked,
-                              'bg-muted': !o.isCorrect && !isPicked,
-                            })}
-                          >
-                            {String.fromCharCode(65 + oi)}. {o.value}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <h2 className="mb-2 text-sm font-semibold">Writing</h2>
-            <ul className="space-y-4">
-              {writing.map((item, idx) => {
-                const answer = answersWriting[idx];
-                return (
-                  <li key={idx} className="rounded-md border p-3 text-xs">
-                    <div className="mb-2 text-sm font-medium">{item.task}</div>
-                    <div className="flex flex-col gap-1">
-                      <div
-                        className={cn(
-                          'rounded-md border px-2 py-1',
-                          answer?.isCorrect
-                            ? 'border-green-400 bg-green-100 dark:bg-green-500/10'
-                            : 'border-rose-400 bg-rose-100 dark:bg-rose-500/10',
-                        )}
-                      >
-                        Your answer: {answer?.value || '—'}
-                      </div>
-                      {!answer?.isCorrect && (
-                        <div className="rounded-md border border-green-400 bg-green-100 px-2 py-1 dark:bg-green-500/10">
-                          Correct answer: {item.answer}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="mt-6 flex gap-2">
-              <Button size="sm" onClick={retry}>
-                Retry
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/mistakes">Done</Link>
-              </Button>
+      {total === 0 && (
+        <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
+          No exercises available. Create a task again.
+        </div>
+      )}
+
+      {total > 0 && !completed && (
+        <div className="flex flex-col gap-6" aria-live="polite">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs font-medium tracking-wide">
+              <span>
+                {index + 1} / {total}
+              </span>
+              <span className="text-muted-foreground flex gap-2">
+                <span>{Math.round((correctCount / total) * 100)}% correct</span>
+                {skippedCount > 0 && <span className="opacity-70">• {skippedCount} skipped</span>}
+              </span>
+            </div>
+            <div className="bg-muted/60 h-1.5 w-full overflow-hidden rounded-full">
+              <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${percent}%` }} />
             </div>
           </div>
-        </div>
-      ) : stage === 'choosing' ? (
-        <div className="flex flex-col gap-4">
-          <header className="space-y-1">
-            <h1 className="text-xl font-semibold">Practice (Choosing)</h1>
-            <div className="text-muted-foreground text-xs">
-              Question {currentChoosing + 1} of {choosing.length}
-            </div>
-          </header>
-          <div className="rounded-lg border p-5 shadow-sm">
-            <div className="mb-4 font-medium">{choosingQuestion.question}</div>
-            <ul className="space-y-2">
-              {choosingQuestion.options.map((option, idx) => {
-                const picked = choosingSelectedIdx === idx;
-                const correct = choosingAnswered && option.isCorrect;
-                const wrongPick = choosingAnswered && picked && !option.isCorrect;
-                return (
-                  <li key={idx}>
-                    <button
-                      onClick={() => handleSelectChoosing(idx)}
-                      className={cn(
-                        'group w-full rounded-md border px-3 py-2 text-left text-sm transition-colors disabled:opacity-70',
-                        {
-                          'border-green-500 bg-green-100 dark:bg-green-500/10': correct,
-                          'border-rose-500 bg-rose-100 dark:bg-rose-500/10': wrongPick,
-                        },
-                      )}
-                      disabled={choosingAnswered}
-                    >
-                      <span className="mr-2 font-mono text-xs opacity-70">{String.fromCharCode(65 + idx)}.</span>
-                      {option.value}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="mt-4 flex items-center justify-between">
-              {choosingAnswered ? (
-                <div className={cn('text-xs font-medium', choosingIsCorrect ? 'text-green-600' : 'text-rose-600')}>
-                  {choosingIsCorrect ? 'Correct' : 'Incorrect'}
-                </div>
-              ) : (
-                <div className="text-muted-foreground text-xs">Select one answer.</div>
-              )}
-              <Button size="sm" onClick={nextChoosing} disabled={!choosingAnswered}>
-                {currentChoosing + 1 < choosing.length ? 'Next' : 'Start Writing'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <header className="space-y-1">
-            <h1 className="text-xl font-semibold">Practice (Writing)</h1>
-            <div className="text-muted-foreground text-xs">
-              Exercise {currentWriting + 1} of {writing.length}
-            </div>
-          </header>
-          <div className="rounded-lg border p-5 shadow-sm">
-            <div className="mb-4 whitespace-pre-wrap font-medium">{writingExercise.task}</div>
-            <div className="space-y-2">
-              <textarea
-                className="bg-background focus:ring-ring min-h-[120px] w-full rounded-md border p-3 text-sm focus:outline-none focus:ring-2 disabled:opacity-70"
-                placeholder="Type your answer here..."
-                disabled={writingAnswered}
-                defaultValue={writingUserValue}
-                ref={ref}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    const target = e.target as HTMLTextAreaElement;
-                    checkWriting(target.value);
-                  }
-                }}
-                onBlur={() => {
-                  // keep content if user clicked elsewhere
-                }}
-                id="writing-answer"
-              />
-              <div className="flex items-center justify-between gap-2">
-                {writingAnswered ? (
-                  <div className={cn('text-xs font-medium', writingIsCorrect ? 'text-green-600' : 'text-rose-600')}>
-                    {writingIsCorrect ? 'Correct' : 'Incorrect'}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-xs">Press Cmd/Ctrl+Enter or click Check.</div>
+
+          <div className="relative rounded-xl border p-5 shadow-sm backdrop-blur-sm">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+                  current.type === 'choosing'
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-500/30'
+                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30',
                 )}
-                {!writingAnswered && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      const el = document.getElementById('writing-answer') as HTMLTextAreaElement | null;
-                      if (el) {
-                        checkWriting(el.value);
+              >
+                {current.type === 'choosing' ? 'Choosing' : 'Writing'}
+              </span>
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                  current.data.difficulty === 'easy' &&
+                    'border-lime-500/40 bg-lime-500/10 text-lime-600 dark:text-lime-300',
+                  current.data.difficulty === 'medium' &&
+                    'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300',
+                  current.data.difficulty === 'hard' &&
+                    'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-300',
+                )}
+              >
+                {current.data.difficulty}
+              </span>
+            </div>
+
+            {current.type === 'choosing' && (
+              <div className="flex flex-col gap-5">
+                <p className="text-sm leading-relaxed" aria-label="Question">
+                  {current.data.question}
+                </p>
+                <div className="grid gap-3">
+                  {current.data.options.map((option) => {
+                    const answered = answers[index];
+                    const isPicked = answered?.value === option.value;
+                    const correct = option.isCorrect;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        disabled={!!answered}
+                        onClick={() => selectOption(option.value, option.isCorrect)}
+                        className={cn(
+                          'text-left rounded-md border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-90',
+                          !answered && 'hover:border-primary/60 hover:bg-primary/5',
+                          answered && correct && 'border-emerald-500/70 bg-emerald-500/10',
+                          answered && isPicked && !correct && 'border-rose-500/70 bg-rose-500/10',
+                        )}
+                        aria-pressed={isPicked}
+                      >
+                        <span className="flex items-start gap-2">
+                          <span className="mt-0.5 inline-block size-2 shrink-0 rounded-full border" />
+                          <span>{option.value}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {answers[index] && !answers[index]?.skipped && (
+                  <div
+                    className={cn(
+                      'rounded-md border px-3 py-2 text-xs font-medium',
+                      answers[index].correct
+                        ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                        : 'border-rose-500/50 bg-rose-500/10 text-rose-600 dark:text-rose-300',
+                    )}
+                    role="status"
+                  >
+                    {answers[index].correct ? 'Correct!' : 'Incorrect'}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap justify-end gap-2 pt-2">
+                  {!answers[index] && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      type="button"
+                      onClick={skipCurrent}
+                      aria-label="Skip exercise"
+                    >
+                      Skip
+                    </Button>
+                  )}
+                  {!isLast && answers[index] && (
+                    <Button size="sm" onClick={goNext} aria-label="Next exercise">
+                      Next →
+                    </Button>
+                  )}
+                  {isLast && answers[index] && (
+                    <Button
+                      size="sm"
+                      onClick={() => setIndex((prevIndex) => prevIndex)}
+                      aria-label="Finish practice"
+                      disabled
+                    >
+                      Finish below ↓
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {current.type === 'writing' && (
+              <div className="flex flex-col gap-5">
+                <p className="text-sm leading-relaxed" aria-label="Task">
+                  {current.data.task}
+                </p>
+                <div className="flex flex-col gap-3">
+                  <textarea
+                    className="bg-background focus-visible:ring-ring min-h-[90px] w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 disabled:opacity-70"
+                    placeholder="Type your answer..."
+                    value={input}
+                    disabled={!!answers[index]}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+
+                        if (input.trim()) {
+                          checkWriting();
+                        }
                       }
                     }}
-                  >
-                    Check
-                  </Button>
+                    aria-label="Your answer"
+                  />
+                  {!answers[index] && (
+                    <div className="flex justify-between">
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" disabled={!input.trim()} onClick={checkWriting} aria-label="Check answer">
+                          Check
+                        </Button>
+                        {!revealed && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            type="button"
+                            onClick={reveal}
+                            aria-label="Reveal answer"
+                          >
+                            Reveal
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        type="button"
+                        onClick={skipCurrent}
+                        aria-label="Skip exercise"
+                      >
+                        Skip
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {(answers[index] || revealed) && !answers[index]?.skipped && (
+                  <div className="space-y-2 text-xs">
+                    {answers[index] && (
+                      <div
+                        className={cn(
+                          'inline-flex items-center rounded-md border px-2 py-1 font-medium',
+                          answers[index].correct
+                            ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                            : 'border-rose-500/50 bg-rose-500/10 text-rose-600 dark:text-rose-300',
+                        )}
+                        role="status"
+                      >
+                        {answers[index].correct ? 'Correct!' : 'Not quite'}
+                      </div>
+                    )}
+                    <p>
+                      <span className="text-muted-foreground">Answer: </span>
+                      <span className="font-medium">{current.data.answer}</span>
+                    </p>
+                  </div>
+                )}
+
+                {answers[index] && (
+                  <div className="flex flex-wrap justify-end gap-2 pt-2">
+                    {isLast ? (
+                      <Button
+                        size="sm"
+                        onClick={() => setIndex((prevIndex) => prevIndex)}
+                        aria-label="Finish practice"
+                        disabled
+                      >
+                        Finish below ↓
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={goNext} aria-label="Next exercise">
+                        Next →
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
-              {writingAnswered && !writingIsCorrect && (
-                <div className="text-xs">
-                  <span className="font-medium">Correct answer:</span> {writingExercise.answer}
-                </div>
-              )}
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button size="sm" onClick={nextWriting} disabled={!writingAnswered}>
-                {currentWriting + 1 < writing.length ? 'Next' : 'Finish'}
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       )}
-    </div>
+
+      {completed && (
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">Session Complete</h1>
+            <p className="text-muted-foreground text-sm">
+              You answered {correctCount} of {total} correctly ({Math.round((correctCount / total) * 100)}%).
+            </p>
+          </div>
+          <div className="grid gap-3 text-xs">
+            {exercises.map((exercise, exerciseIndex) => {
+              const exerciseAnswer = answers[exerciseIndex];
+              return (
+                <div
+                  key={exerciseIndex}
+                  className={cn(
+                    'rounded-md border p-3',
+                    exerciseAnswer?.skipped
+                      ? 'border-muted/40 opacity-70'
+                      : exerciseAnswer?.correct
+                        ? 'border-emerald-500/40 bg-emerald-500/5'
+                        : 'border-muted/40',
+                  )}
+                >
+                  <div className="mb-1 flex items-center gap-2">
+                    <span
+                      className={cn(
+                        'inline-flex size-5 items-center justify-center rounded-full text-[10px] font-semibold',
+                        exerciseAnswer?.skipped
+                          ? 'bg-muted text-muted-foreground'
+                          : exerciseAnswer?.correct
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
+                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-300',
+                      )}
+                    >
+                      {exerciseAnswer?.skipped ? '–' : exerciseAnswer?.correct ? '✓' : '✕'}
+                    </span>
+                    <span className="font-medium">{exercise.type === 'choosing' ? 'Choosing' : 'Writing'}</span>
+                    <span className="text-muted-foreground ml-auto">#{exerciseIndex + 1}</span>
+                  </div>
+                  <div className="text-muted-foreground line-clamp-2 text-[11px] leading-snug">
+                    {exercise.type === 'choosing' ? exercise.data.question : exercise.data.task}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button asChild>
+              <Link to="/mistakes/$id" params={{ id }}>
+                Back to Mistake
+              </Link>
+            </Button>
+            <Button variant="secondary" onClick={retry}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+    </main>
   );
 };
