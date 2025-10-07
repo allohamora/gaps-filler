@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createLogger } from 'src/services/logger.service.js';
-import { AssemblyAiSpeechToTextSession } from './services/assembly-ai-speech-to-text.service.js';
+import { SpeechToTextSession } from './speech-to-text/speech-to-text.js';
+import { AssemblyAiSpeechToTextSession } from './speech-to-text/assembly-ai.speech-to-text.js';
 import { ChatSession } from '../services/chat.service.js';
 import { StreamerSession } from './services/streamer.service.js';
 import { interruptManager } from './services/interrupt.service.js';
@@ -11,7 +12,7 @@ import { VoiceChatMessage } from './voice-chat.types.js';
 class VoiceChatSession {
   private logger = createLogger('voice-chat-session');
 
-  private stt = new AssemblyAiSpeechToTextSession();
+  private stt: SpeechToTextSession = new AssemblyAiSpeechToTextSession();
   private tts = new TextToSpeechSession();
   private chat = new ChatSession();
   private streamer = new StreamerSession();

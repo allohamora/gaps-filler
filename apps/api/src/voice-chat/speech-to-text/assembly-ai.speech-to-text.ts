@@ -3,18 +3,11 @@ import { createLogger } from 'src/services/logger.service.js';
 import { randomUUID } from 'node:crypto';
 import { SAMPLE_RATE } from '../voice-chat.constants.js';
 import { ASSEMBLY_AI_API_KEY } from 'src/config.js';
-
-export type Word = { word: string; confidence: number };
-
-export type OnTranscriptionOptions = {
-  onResult: (transcription: Word[], id: string) => void | Promise<void>;
-  onChunk: (transcription: Word[], id: string) => void;
-  onText: (transcription: Word[]) => void;
-};
+import { OnTranscriptionOptions, SpeechToTextSession } from './speech-to-text.js';
 
 const client = new AssemblyAI({ apiKey: ASSEMBLY_AI_API_KEY });
 
-export class AssemblyAiSpeechToTextSession {
+export class AssemblyAiSpeechToTextSession implements SpeechToTextSession {
   private logger = createLogger('assembly-ai-speech-to-text-session');
 
   private transcriber = client.streaming.transcriber({
