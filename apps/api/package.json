@@ -21,6 +21,7 @@
     "@hono/node-ws": "^1.2.0",
     "@hono/zod-validator": "^0.7.2",
     "ai": "^5.0.24",
+    "assemblyai": "^4.16.1",
     "close-with-grace": "^2.2.0",
     "hono": "^4.9.4",
     "lowdb": "^7.0.1",

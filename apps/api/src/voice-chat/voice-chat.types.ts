@@ -1,5 +1,5 @@
 import { Mistake } from '../services/chat.service.js';
-import { Word } from './services/speech-to-text.service.js';
+import { Word } from './services/deepgram-speech-to-text.service.js';
 
 export type { Word };
 

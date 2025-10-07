@@ -4,21 +4,14 @@ import { createLogger } from 'src/services/logger.service.js';
 import { randomUUID } from 'node:crypto';
 import { CHANNELS, SAMPLE_RATE } from '../voice-chat.constants.js';
 import { DEEPGRAM_API_KEY } from 'src/config.js';
-
-export type Word = { word: string; confidence: number };
-
-export type OnTranscriptionOptions = {
-  onResult: (transcription: Word[], id: string) => void | Promise<void>;
-  onChunk: (transcription: Word[], id: string) => void;
-  onText: (transcription: Word[]) => void;
-};
+import { OnTranscriptionOptions, SpeechToTextSession, Word } from './speech-to-text.js';
 
 const KEEP_ALIVE_INTERVAL = 10 * 1000;
 
 const client = createClient(DEEPGRAM_API_KEY);
 
-export class SpeechToTextSession {
-  private logger = createLogger('speech-to-text-session');
+export class DeepgramSpeechToTextSession implements SpeechToTextSession {
+  private logger = createLogger('deepgram-speech-to-text-session');
 
   private live = client.listen.live({
     // https://developers.deepgram.com/docs/model
