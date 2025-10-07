@@ -16,9 +16,14 @@ export class AssemblyAiSpeechToTextSession implements SpeechToTextSession {
     formatTurns: true,
   });
 
-  private isReady = false;
+  private isInitialized = false;
 
   public async init() {
+    if (this.isInitialized) {
+      this.logger.warn({ msg: 'already initialized' });
+      return;
+    }
+
     this.transcriber.on('open', ({ id }) => {
       this.logger.info({ msg: 'session opened', id });
     });
@@ -33,22 +38,27 @@ export class AssemblyAiSpeechToTextSession implements SpeechToTextSession {
 
     await this.transcriber.connect();
 
-    this.isReady = true;
+    this.isInitialized = true;
 
     this.logger.info({ msg: 'initialized' });
   }
 
   public async close() {
+    if (!this.isInitialized) {
+      this.logger.warn({ msg: 'not initialized' });
+      return;
+    }
+
     await this.transcriber.close();
 
-    this.isReady = false;
+    this.isInitialized = false;
 
     this.logger.info({ msg: 'closed' });
   }
 
   public transcript(buffer: Buffer) {
     // we can receive audio before we can handle it
-    if (this.isReady) {
+    if (this.isInitialized) {
       this.transcriber.sendAudio(buffer.buffer);
     }
   }
