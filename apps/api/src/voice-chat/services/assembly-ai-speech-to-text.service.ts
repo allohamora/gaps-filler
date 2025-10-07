@@ -14,8 +14,8 @@ export type OnTranscriptionOptions = {
 
 const client = new AssemblyAI({ apiKey: ASSEMBLY_AI_API_KEY });
 
-export class SpeechToTextSession {
-  private logger = createLogger('speech-to-text-session');
+export class AssemblyAiSpeechToTextSession {
+  private logger = createLogger('assembly-ai-speech-to-text-session');
 
   private transcriber = client.streaming.transcriber({
     sampleRate: SAMPLE_RATE,
