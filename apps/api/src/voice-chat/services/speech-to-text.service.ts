@@ -1,9 +1,8 @@
-import { createClient, LiveTranscriptionEvent, LiveTranscriptionEvents } from '@deepgram/sdk';
-import { once } from 'node:events';
+import { AssemblyAI } from 'assemblyai';
 import { createLogger } from 'src/services/logger.service.js';
 import { randomUUID } from 'node:crypto';
-import { CHANNELS, SAMPLE_RATE } from '../voice-chat.constants.js';
-import { DEEPGRAM_API_KEY } from 'src/config.js';
+import { SAMPLE_RATE } from '../voice-chat.constants.js';
+import { ASSEMBLY_AI_API_KEY } from 'src/config.js';
 
 export type Word = { word: string; confidence: number };
 
@@ -13,123 +12,67 @@ export type OnTranscriptionOptions = {
   onText: (transcription: Word[]) => void;
 };
 
-const KEEP_ALIVE_INTERVAL = 10 * 1000;
-
-const client = createClient(DEEPGRAM_API_KEY);
+const client = new AssemblyAI({ apiKey: ASSEMBLY_AI_API_KEY });
 
 export class SpeechToTextSession {
   private logger = createLogger('speech-to-text-session');
 
-  private live = client.listen.live({
-    // https://developers.deepgram.com/docs/model
-    // https://developers.deepgram.com/docs/models-languages-overview
-    model: 'nova-3',
-
-    interim_results: true,
-    utterance_end_ms: 1000,
-
-    // https://developers.deepgram.com/docs/smart-format
-    // with smart formatting we receive the long load number as date time or something and its' not possible to receive the load number
-    punctuate: true,
-    no_delay: true,
-    endpointing: 300,
-
-    encoding: 'linear16',
-    channels: CHANNELS,
-    sample_rate: SAMPLE_RATE,
-
-    language: 'en',
+  private transcriber = client.streaming.transcriber({
+    sampleRate: SAMPLE_RATE,
+    encoding: 'pcm_s16le',
+    formatTurns: true,
   });
 
-  private keepAliveInterval?: NodeJS.Timeout;
-
-  private onClose = async () => {
-    await this.close();
-  };
+  private isReady = false;
 
   public async init() {
-    await once(this.live, LiveTranscriptionEvents.Open);
+    this.transcriber.on('open', ({ id }) => {
+      this.logger.info({ msg: 'session opened', id });
+    });
 
-    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
-    this.keepAliveInterval = setInterval(() => {
-      this.live.keepAlive();
-    }, KEEP_ALIVE_INTERVAL);
+    this.transcriber.on('error', (err) => {
+      this.logger.error({ err, msg: 'transcriber error' });
+    });
 
-    this.live.addListener(LiveTranscriptionEvents.Close, this.onClose);
+    this.transcriber.on('close', (code, reason) => {
+      this.logger.info({ msg: 'transcriber closed', code, reason });
+    });
+
+    await this.transcriber.connect();
+
+    this.isReady = true;
 
     this.logger.info({ msg: 'initialized' });
   }
 
   public async close() {
-    clearInterval(this.keepAliveInterval);
+    await this.transcriber.close();
 
-    this.live.requestClose();
-    this.live.removeAllListeners();
+    this.isReady = false;
 
     this.logger.info({ msg: 'closed' });
   }
 
   public transcript(buffer: Buffer) {
-    this.live.send(new Blob([buffer as BlobPart]));
+    // we can receive audio before we can handle it
+    if (this.isReady) {
+      this.transcriber.sendAudio(buffer.buffer);
+    }
   }
 
-  // https://developers.deepgram.com/docs/understanding-end-of-speech-detection#using-utteranceend-and-endpointing
   public onTranscription({ onResult, onChunk, onText }: OnTranscriptionOptions) {
-    let chunks: Word[] = [];
+    this.transcriber.on('turn', (turn) => {
+      const transcription = turn?.words
+        ?.filter(({ word_is_final }) => word_is_final)
+        ?.map(({ text, confidence }) => ({ word: text, confidence }));
+      onText(transcription);
 
-    let id: string = randomUUID();
+      if (transcription?.length && turn.end_of_turn && turn.turn_is_formatted) {
+        const id = randomUUID();
 
-    const sendTranscription = () => {
-      const transcription = chunks;
-      chunks = [];
-
-      if (!id) {
-        this.logger.error({ err: new Error('no request id') });
-        return;
-      }
-
-      if (transcription.length) {
+        onChunk(transcription, id);
         onResult(transcription, id);
       }
-
-      id = randomUUID();
-    };
-
-    const onUtteranceEnd = () => {
-      const isIgnored = !chunks.length;
-
-      this.logger.info({ msg: 'utterance-end', isIgnored });
-
-      // https://github.com/nikolawhallon/temp-utterance-end?tab=readme-ov-file#using-both
-      // https://github.com/orgs/deepgram/discussions/980
-      if (isIgnored) {
-        return;
-      }
-
-      sendTranscription();
-    };
-
-    const onTranscript = (data: LiveTranscriptionEvent) => {
-      const { words } = data.channel.alternatives[0] || {};
-      const { is_final, speech_final } = data;
-
-      const transcript = words?.map(({ punctuated_word, confidence }) => ({ word: punctuated_word, confidence }));
-
-      if (transcript?.length) {
-        onText(transcript);
-      }
-
-      if (transcript?.length && is_final) {
-        onChunk(transcript, id);
-        chunks.push(...transcript);
-      }
-
-      if (speech_final) {
-        sendTranscription();
-      }
-    };
-
-    this.live.on(LiveTranscriptionEvents.Transcript, onTranscript);
-    this.live.on(LiveTranscriptionEvents.UtteranceEnd, onUtteranceEnd);
+    });
   }
 }
